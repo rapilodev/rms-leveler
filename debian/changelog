@@ -1,0 +1,43 @@
+rms-leveler (0.01.0043) trusty; urgency=low
+  * add multiple RMS windows for rms_leveler_6s
+ -- Milan Chrobok <mc@radiopiloten.de>  Sun, 27 Aug 2017 12:04:09 +0330
+rms-leveler (0.01.0042) trusty; urgency=low
+  * fix duration times in levelers
+ -- Milan Chrobok <mc@radiopiloten.de>  Sat, 26 Aug 2017 12:04:09 +0330
+rms-leveler (0.01.0040) trusty; urgency=low
+  * rewrite using channels
+ -- Milan Chrobok <mc@radiopiloten.de>  Fri, 25 Aug 2017 12:04:09 +0330
+rms-leveler (0.01.0039) trusty; urgency=low
+  * limit increase of amplication to 11% per second   
+ -- Milan Chrobok <mc@radiopiloten.de>  Sun, 07 May 2017 12:04:09 +0330
+
+rms-leveler (0.01.0035) trusty; urgency=low
+  * add rms_leveler_3s, rms_leveler_6s and rms_leveler_10s for windows of 3, 6 and 10 seconds
+  * add rms_limiter_3s, rms_limiter_6s and rms_limiter_10s for windows of 3, 6 and 10 seconds
+  * make buffer size depending on sampling rate
+ -- Milan Chrobok <mc@radiopiloten.de>  Tue, 27 Dec 2016 12:04:09 +0330
+
+rms-leveler (0.01.0033) trusty; urgency=low
+  * remove DC offset
+ -- Milan Chrobok <mc@radiopiloten.de>  Sat, 23 Dec 2016 12:04:09 +0330
+
+rms-leveler (0.01.0032) trusty; urgency=low
+  * fix logarithmic compression
+ -- Milan Chrobok <mc@radiopiloten.de>  Sat, 23 Dec 2016 12:04:09 +0430
+
+rms-leveler (0.01.0031) trusty; urgency=low
+  * add rms_leveler2, limit from -3 to -2 dB by logarithmic compression
+ -- Milan Chrobok <mc@radiopiloten.de>  Fri, 22 Dec 2016 12:04:09 +0430
+
+rms-leveler (0.01.0029) trusty; urgency=low
+  * add interpolation to rms_limiter
+ -- Milan Chrobok <mc@radiopiloten.de>  Sat, 10 Dec 2016 12:04:09 +0430
+
+rms-leveler (0.01.0023) trusty; urgency=low
+  * add rms_limiter, no upward amplification, 3 seconds window, 2 seconds delay
+ -- Milan Chrobok <mc@radiopiloten.de>  Sun, 27 Nov 2016 12:04:09 +0430
+
+rms-leveler (0.01.0022) trusty; urgency=low
+  * add rms_leveler, 3 seconds window, 2 seconds delay
+ -- Milan Chrobok <mc@radiopiloten.de>  Sun, 06 Nov 2016 12:04:09 +0430
+
