@@ -1,6 +1,10 @@
+rmsLeveler_0.1s.so /usr/lib/ladspa/
+rmsLeveler_1s.so /usr/lib/ladspa/
 rmsLeveler_3s.so /usr/lib/ladspa/
 rmsLeveler_6s.so /usr/lib/ladspa/
 rmsLeveler_10s.so /usr/lib/ladspa/
+rmsLimiter_0.1s.so /usr/lib/ladspa/
+rmsLimiter_1s.so /usr/lib/ladspa/
 rmsLimiter_3s.so /usr/lib/ladspa/
 rmsLimiter_6s.so /usr/lib/ladspa/
 rmsLimiter_10s.so /usr/lib/ladspa/

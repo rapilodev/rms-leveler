@@ -10,4 +10,4 @@ Homepage: https://launchpad.net/~mc-1/+archive/audioTools
 Package: rms-leveler
 Architecture: any
 Depends: ${misc:Depends}, ladspa-sdk
-Description: LADSPA plugin to level stereo to -20dB RMS
+Description: LADSPA plugins to limit or gain stereo audio to -20dB RMS

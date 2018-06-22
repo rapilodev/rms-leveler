@@ -1,3 +1,10 @@
+rms-leveler (0.01.0045) xenial; urgency=low
+  * shift to xenial
+ -- Milan Chrobok <mc@radiopiloten.de>  Fri, 22 Jun 2018 12:04:09 +0330
+rms-leveler (0.01.0044) trusty; urgency=low
+  * add versions for 1s and 0.1s
+ -- Milan Chrobok <mc@radiopiloten.de>  Fri, 22 Jun 2018 12:04:09 +0330
+
 rms-leveler (0.01.0043) trusty; urgency=low
   * add multiple RMS windows for rms_leveler_6s
  -- Milan Chrobok <mc@radiopiloten.de>  Sun, 27 Aug 2017 12:04:09 +0330
