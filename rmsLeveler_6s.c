@@ -21,21 +21,29 @@ const double maxChannels = 2;
 
 // target rms level, should be -20 DB
 const double TARGET_RMS = -20.0;
+
 // long term measurement window
 const double BUFFER_DURATION1 = 6;
 const double BUFFER_DURATION2 = 3;
 const double BUFFER_DURATION3 = 0.4;
 
+// how often update statistics
+const double ADJUST_RATE = 0.333;
+
 // compression start = -3dB
 const double compressionStart = 0.707945784;
+
 // maximum level = -1dB
 const double MAX_LEVEL = 0.891250938;
+
 // amplitude limit to what DC offset is not removed
 const double dcOffsetLimit = 0.005;
+
 // minimum level = -40dB =0.01
 const double MIN_RMS = -40;
 
-const double maxAmpChangeUp = 0.2;
+// max amplication change per second
+const double MAX_CHANGE = 0.7;
 
 // channel indexes
 #define IN_LEFT    0
@@ -57,6 +65,7 @@ struct Window {
     unsigned long index;
     unsigned long adjustPosition;
     double adjustRate;
+    double maxAmpChange;
     unsigned long playPosition;
     double amplification;
     double oldAmplification;
@@ -74,11 +83,13 @@ void initWindow(struct Window* window, double duration, double rate) {
     window->position = 0.0;
     window->index = 0;
     window->adjustPosition = 0;
-    window->adjustRate = (int) rate * 0.3;
+    window->adjustRate = (int) ( rate * ADJUST_RATE ) ;
+    window->maxAmpChange = MAX_CHANGE * ADJUST_RATE;
     window->deltaPosition = 1.0 / rate;
     window->amplification = 1.0;
     window->oldAmplification = 1.0;
 }
+
 
 inline void addWindowData(struct Window* window, LADSPA_Data value) {
     window->sum -= window->data[window->index];
@@ -184,9 +195,9 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
         //window2->data = centerData - ( window2->dataSize * sizeof(LADSPA_Data) ) / 2;
         //window3->data = centerData - ( window3->dataSize * sizeof(LADSPA_Data) ) / 2;
 
-        channel->amplification = 1.0;
-        channel->oldAmplification = 1.0;
-        channel->oldAmplificationSmoothed = 1.0;
+        channel->amplification = 0.0;
+        channel->oldAmplification = 0.0;
+        channel->oldAmplificationSmoothed = 0.0;
     }
     return (LADSPA_Handle) h;
 }
@@ -249,6 +260,7 @@ inline double getAmplification(const double rms, const double oldRms, const doub
     return amp;
 }
 
+/*
 inline double interpolateAmplification(const double amp, const double oldAmp, unsigned long pos, const unsigned long maxPos) {
     if (pos > maxPos)
         pos = maxPos;
@@ -259,6 +271,31 @@ inline double interpolateAmplification(const double amp, const double oldAmp, un
     //fprintf(stderr, "%lu %lu %f %f\n", pos, maxPos, proportion,amplification);
     return amplification;
 }
+*/
+inline double interpolateAmplification(const double amp, const double oldAmp, unsigned long pos, const unsigned long maxPos) {
+    if (pos > maxPos)
+        pos = maxPos;
+    if (pos < 0)
+        pos = 0;
+    double x = (double) pos / maxPos;
+
+    // linear
+    //double proportion = x;
+
+    // smoothstep
+    double proportion = x * x * (3 - 2 * x);
+
+    // smootherstep
+    //double proportion =  x * x * x * (x * (x * 6 - 15) + 10);
+
+    // smootheststep
+    //double proportion = x * x * x * x * (x * (x * (-20.0 * x + 70.0) - 84.0) + 35.0);
+
+    double amplification = (proportion * amp) + ((1.0 - proportion) * oldAmp);
+    //fprintf(stderr, "%lu %lu %f %f\n", pos, maxPos, proportion,amplification);
+    return amplification;
+}
+
 
 // compress by logarithm function (up to 10)
 // scale by compressionFactor to limit value to -1 dB
@@ -294,10 +331,12 @@ void calcWindowAmplification(struct Window* window) {
     window->oldAmplification = window->amplification;
     window->amplification = getAmplification(window->rms, window->oldRms, window->amplification);
 
-    double limit = window->oldAmplification + maxAmpChangeUp;
+    
+    double limit = window->oldAmplification + window->maxAmpChange;
     if (window->amplification > limit) {
         window->amplification = limit;
     }
+    
 
 }
 
@@ -340,15 +379,18 @@ void getMinAmp(struct Channel* channel, struct Window* window1, struct Window* w
 }
 
 void getAvgAmp(struct Channel* channel, struct Window* window1, struct Window* window2, struct Window* window3) {
-    const double amp1 = 3;
-    const double amp2 = 2;
-    const double amp3 = 1;
+    const double amp1 = 1.0;
+    const double amp2 = 1.0;
+    const double amp3 = 1.0;
     const double sum = amp1 + amp2 + amp3;
     channel->amplification = (amp1 * window1->amplification + amp2 * window2->amplification + amp3 * window3->amplification) / sum;
     channel->oldAmplification = (amp1 * window1->oldAmplification + amp2 * window2->oldAmplification + amp3 * window3->oldAmplification)
             / sum;
 
 }
+
+
+
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
     Leveler * h = (Leveler *) handle;
@@ -384,12 +426,6 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             // interpolate with shifted adjust position
             double ampFactor = interpolateAmplification(channel->amplification, channel->oldAmplification, window1->adjustPosition,
                     window1->adjustRate);
-
-            // smooth
-            //double smoothRate = window->adjustRate;
-            //double ampFactor2 = ((smoothRate - 1) * channel->oldAmplificationSmoothed + channel->amplification) / smoothRate;
-            //channel->oldAmplificationSmoothed = ampFactor2;
-            //ampFactor = (ampFactor + ampFactor2 ) / 2.;
 
             // read from playPosition, amplify and limit
             double value = (window1->data[window1->playPosition] - getWindowDcOffset(window1)) * ampFactor;
