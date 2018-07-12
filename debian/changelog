@@ -1,6 +1,11 @@
+rms-leveler (0.01.0048) xenial; urgency=low
+  * soft volume interpolation
+ -- Milan Chrobok <mc@radiopiloten.de>  Fri, 12 Jun 2018 22:04:09 +0330
+
 rms-leveler (0.01.0047) xenial; urgency=low
   * shift to xenial
  -- Milan Chrobok <mc@radiopiloten.de>  Fri, 22 Jun 2018 12:04:09 +0330
+
 rms-leveler (0.01.0044) trusty; urgency=low
   * add versions for 1s and 0.1s
  -- Milan Chrobok <mc@radiopiloten.de>  Fri, 22 Jun 2018 12:04:09 +0330
