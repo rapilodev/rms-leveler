@@ -4,3 +4,5 @@
 #cp rmsLeveler.so /usr/lib/ladspa/
 
 exit 0
+
+#DEBHELPER#
