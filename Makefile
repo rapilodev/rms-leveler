@@ -14,8 +14,13 @@ all:
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC -o rmsLimiter_3s.so rmsLimiter_3s.c
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC -o rmsLimiter_6s.so rmsLimiter_6s.c
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC -o rmsLimiter_10s.so rmsLimiter_10s.c
+	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC ebur128Leveler_6s.c /usr/lib/*/libebur128.so -o ebur128Leveler_6s.so
 
 clean:
 	rm -f rmsLeveler.so
 	rm -f rmsLimiter.so
+
+
+#  ffmpeg -i easy.wav -af ladspa=file=rmsLeveler_6s:rms_leveler_6s output2.wav
+#  ffmpeg -i easy.wav -af ladspa=file=ebur128Leveler_6s:r128_leveler_6s output1.wav
 

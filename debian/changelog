@@ -1,3 +1,7 @@
+rms-leveler (0.02.0003) bionic; urgency=low
+  * add ebur128_leveler_6s for EBU E128.
+ -- Milan Chrobok <mc@radiopiloten.de>  Mon, 16 Dec 2019 12:00:00 +0330
+
 rms-leveler (0.01.0048) xenial; urgency=low
   * soft volume interpolation
  -- Milan Chrobok <mc@radiopiloten.de>  Fri, 12 Jun 2018 22:04:09 +0330

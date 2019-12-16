@@ -8,4 +8,4 @@ rmsLimiter_1s.so /usr/lib/ladspa/
 rmsLimiter_3s.so /usr/lib/ladspa/
 rmsLimiter_6s.so /usr/lib/ladspa/
 rmsLimiter_10s.so /usr/lib/ladspa/
-
+ebur128Leveler_6s.so /usr/lib/ladspa/
