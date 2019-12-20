@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 
+
 /*
  * LADSPA plugin to level stereo audio to -20dBFS with -1dBFS head.
  * use a 6 second lookahead window.
@@ -18,7 +19,7 @@
  * Milan Chrobok, 2016 to 2019
  */
 
-const int debug = 0;
+const int debug = 1;
 const double maxChannels = 2;
 
 // target loudness, should be -20 DB
@@ -171,8 +172,8 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
         window = &channel->window;
         initWindow(window, BUFFER_DURATION, h->rate);
 
-        channel->ebur128 = ebur128_init(1, h->rate, EBUR128_MODE_LRA);
-        ebur128_set_max_window(channel->ebur128, window->duration*SECONDS);
+        channel->ebur128 = ebur128_init(1, h->rate, EBUR128_MODE_S);
+        //#ebur128_set_max_window(channel->ebur128, window->duration*SECONDS);
 
         channel->amplification = 1.0;
         channel->oldAmplification = 1.0;
@@ -326,7 +327,9 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 
             // calculate amplification from EBU R128 values
             if (window->adjustPosition == 0) {
-                ebur128_loudness_window(channel->ebur128, window->duration*SECONDS, &loudness_window);
+//                ebur128_loudness_window(channel->ebur128, window->duration*SECONDS, &loudness_window);
+                ebur128_loudness_shortterm(channel->ebur128, &loudness_window);
+
                 calcWindowAmplification(window, loudness_window);
 
                 channel->amplification    = window->amplification;
