@@ -73,6 +73,10 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
 
     h->channels[0] = &h->left;
     h->channels[1] = &h->right;
+    h->left.out = NULL;
+    h->right.out = NULL;
+    h->left.in = NULL;
+    h->right.in = NULL;
 
     h->size = 0;
     h->rate = rate;
@@ -208,7 +212,11 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 
             // sum up left and right values from input
             channel->sum -= channel->data[h->index];
-            channel->data[h->index] = channel->in[s];
+            if (channel->in != NULL) {
+                channel->data[h->index] = channel->in[s];
+            } else {
+                channel->data[h->index] = 0;
+            }
             channel->sum += channel->data[h->index];
 
             double offset = channel->sum / h->size;
@@ -232,7 +240,9 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             value = limit(value);
 
             // output delayed value
-            channel->out[s] = (LADSPA_Data) value;
+            if (channel->out != NULL) {
+                channel->out[s] = (LADSPA_Data) value;
+            }
 
             // sum value RMS over index
             value = channel->data[h->index];
@@ -281,10 +291,17 @@ static const char * c_port_names[4] = { "Input - Left Channel", "Input - Right C
 static LADSPA_PortDescriptor c_port_descriptors[4] = { LADSPA_PORT_AUDIO | LADSPA_PORT_INPUT, LADSPA_PORT_AUDIO | LADSPA_PORT_INPUT,
         LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT, LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT };
 
+static const LADSPA_PortRangeHint psPortRangeHints[4] = {
+    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 },
+    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 },
+    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 },
+    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 }
+};
+
 static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b3e5, .Label = "rms_leveler_1s", .Name =
         "RMS leveler -20dBFS, stereo, 1 seconds window", .Maker = "Milan Chrobok", .Copyright = "GPL 2 or 3", .PortCount = 4,
         .PortDescriptors = c_port_descriptors, .PortNames = c_port_names, .instantiate = instantiate, .connect_port = connect_port, .run =
-                run, .cleanup = cleanup };
+                run, .cleanup = cleanup, .PortRangeHints = psPortRangeHints };
 
 const LADSPA_Descriptor * ladspa_descriptor(unsigned long i) {
     if (i == 0)
