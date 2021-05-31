@@ -22,7 +22,7 @@ const double maxChannels = 2;
 // target rms level, should be -20 DB
 const int TARGET_RMS = -20.0;
 // long term measurement window
-const unsigned int BUFFER_DURATION = 0.3;
+const double BUFFER_DURATION = 0.3;
 // compression start = -3dB
 const double compressionStart = 0.707945784;
 // maximum level = -1dB
@@ -76,7 +76,7 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
 
     h->size = 0;
     h->rate = rate;
-    h->bufferSize = BUFFER_DURATION * h->rate;
+    h->bufferSize = (unsigned long)(BUFFER_DURATION * h->rate);
     h->position = 0.0;
     h->index = 0;
     h->adjustPosition = 0;
