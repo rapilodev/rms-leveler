@@ -39,6 +39,10 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
 
     h->channels[0] = &h->left;
     h->channels[1] = &h->right;
+    h->left.out = NULL;
+    h->right.out = NULL;
+    h->left.in = NULL;
+    h->right.in = NULL;
     h->rate = rate;
 
     int i = 0;
@@ -89,9 +93,10 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
         for (s = 0; s < samples; s++) {
 
             prepareWindow(window);
-            addWindowData(window, channel->in[s]);
+            LADSPA_Data input = (channel == NULL) ? 0 : channel->in[s];
+            addWindowData(window, input);
 
-            ebur128_add_frames_float(channel->ebur128, &channel->in[s], (size_t) 1);
+            ebur128_add_frames_float(channel->ebur128, &input, (size_t) 1);
 
             // interpolate with shifted adjust position
             double ampFactor = interpolateAmplification(channel->amplification, channel->oldAmplification, window->adjustPosition,
@@ -100,7 +105,9 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             // read from playPosition, amplify and limit
             double value = (window->data[window->playPosition] - getWindowDcOffset(window)) * ampFactor;
             value = limit(value);
-            channel->out[s] = (LADSPA_Data) value;
+            if (channel->out != NULL) {
+                channel->out[s] = (LADSPA_Data) value;
+            }
 
             // calculate amplification from EBU R128 values
             if (window->adjustPosition == 0) {
@@ -113,7 +120,7 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 #ifdef DEBUG
                 if (c==0) fprintf(
 					stderr, "%.1f\t%2.3f\t%2.3f\t%2.3f\n",
-					window->position, loudness_window, channel->in[s], value
+					window->position, loudness_window, input, value
 				);
 #endif
             }

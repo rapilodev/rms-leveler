@@ -38,6 +38,10 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
     Leveler * h = malloc(sizeof(Leveler));
     h->channels[0] = &h->left;
     h->channels[1] = &h->right;
+    h->left.out = NULL;
+    h->right.out = NULL;
+    h->left.in = NULL;
+    h->right.in = NULL;
     h->rate = rate;
 
     int i = 0;
@@ -81,9 +85,9 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 
         unsigned long s;
         for (s = 0; s < samples; s++) {
-
+            LADSPA_Data input = (channel == NULL) ? 0 : channel->in[s];
             prepareWindow(window1);
-            addWindowData(window1, channel->in[s]);
+            addWindowData(window1, input);
             sumWindowData(window1);
 
             // interpolate with shifted adjust position
@@ -93,7 +97,9 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             // read from playPosition, amplify and limit
             double value = (window1->data[window1->playPosition] - getWindowDcOffset(window1)) * ampFactor;
             value = limit(value);
-            channel->out[s] = (LADSPA_Data) value;
+            if (channel->out != NULL) {
+                channel->out[s] = (LADSPA_Data) value;
+            }
 
 #ifdef DEBUG
             printWindow(window1, (channel == h->channels[1]));
@@ -112,5 +118,12 @@ static const char * c_port_names[4] = { "Input - Left Channel", "Input - Right C
 
 static LADSPA_PortDescriptor c_port_descriptors[4] = { LADSPA_PORT_AUDIO | LADSPA_PORT_INPUT, LADSPA_PORT_AUDIO | LADSPA_PORT_INPUT,
         LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT, LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT };
+
+static const LADSPA_PortRangeHint psPortRangeHints[4] = {
+    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 },
+    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 },
+    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 },
+    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 }
+};
 
 #endif
