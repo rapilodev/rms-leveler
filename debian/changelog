@@ -1,3 +1,12 @@
+rms-leveler (0.03~hirsute) hirsute; urgency=low
+  * hirsute build
+ -- Milan Chrobok <mc@radiopiloten.de>  Fri, 25 Jun 2019 18:00:00 +0330
+
+rms-leveler (0.03~focal) focal; urgency=low
+  * focal build
+  * update build env
+ -- Milan Chrobok <mc@radiopiloten.de>  Fri, 25 Jun 2019 18:00:00 +0330
+
 rms-leveler (0.02.0003) bionic; urgency=low
   * add ebur128_leveler_6s for EBU E128.
  -- Milan Chrobok <mc@radiopiloten.de>  Mon, 16 Dec 2019 12:00:00 +0330
