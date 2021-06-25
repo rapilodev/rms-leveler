@@ -2,9 +2,8 @@ Source: rms-leveler
 Section: sound
 Priority: optional
 Maintainer: Milan Chrobok <mc@radiopiloten.de>
-Build-Depends: debhelper (>= 8),
+Build-Depends: debhelper (>= 10),
  ladspa-sdk, libebur128-1, libebur128-dev
-Depends: libebur128-1
 Standards-Version: 4.1.4
 Homepage: https://launchpad.net/~mc-1/+archive/audioTools
 
