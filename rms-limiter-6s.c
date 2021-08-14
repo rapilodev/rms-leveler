@@ -4,17 +4,8 @@
 #include <stdio.h>
 #include <math.h>
 
-/*
- * LADSPA plugin to level stereo audio to -20dBFS with -1dBFS head.
- * use a 3 second lookahead window.
- * level both channels independently.
- * limit amplification at -40dB
- * do not increase amplification on decreasing loudness
- * interpolate amplification
- * test with audacity or
- * liquidsoap 'out(ladspa.rms_leveler2(mksafe(audio_to_stereo(input.http("http://ice.rosebud-media.de:8000/88vier-low")))))'
- * Milan Chrobok, 2016
- */
+//  SPDX-FileCopyrightText: 2016 Milan Chrobok
+//  SPDX-License-Identifier: GPL-3.0-or-later
 
 //#define debug
 // target rms level, should be -20 DB
