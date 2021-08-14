@@ -1,14 +1,28 @@
 # rms-leveler
 
-These LADSPA audio plugins can be used to level audio streams.
+These LADSPA audio plugins can be used to level out stereo audio.
 
-The plugins work with windows of different sizes.
+* The plugins work with look-ahead windows of different sizes.
+  The look-ahead results in a certain time delay.
+  The plugin rms_leveler_6s uses three windows: 0.3, 3 and 6 seconds.
+* Both stereo channels are levelled independently.
+* The limiter plugins limit the signal to -20dB RMS or -20 LUFS.
+* The Leveler plugins additionally boost the signal above -40dB to -20db RMS.
+* When the signal is faded out, the gain is not increased.
+* The volume of the window is measured and interpolated three times a second.
+* The EBU-R128 plugin uses libebur128 to measure the volume in LUFS instead of RMS.
 
-In order to level exactly, this results in a certain time delay.
+There are no parameters necessary. Instead there are separate plugins for different settings:
 
-The limiter plugins limit the signal to -20dB RMS.
-
-The leveler plugins also raises the signal above a certain threshold to -20db RMS.
-
-The EBU-R128 plugin uses libebur128 to measure the volume in LUFS instead of RMS.
-
+* rms_leveler_0.3s
+* rms_limiter_0.3s
+* rms_leveler_1s
+* rms_limiter_1s
+* rms_leveler_3s
+* rms_limiter_3s
+* rms_leveler_6s
+* rms_limiter_6s
+* rms_leveler_10s
+* rms_limiter_10s
+* ebur128_leveler_6s
+* ebur128_limiter_6s
