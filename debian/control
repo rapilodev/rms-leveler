@@ -4,10 +4,11 @@ Priority: optional
 Maintainer: Milan Chrobok <mc@radiopiloten.de>
 Build-Depends: debhelper (>= 10),
  ladspa-sdk, libebur128-1, libebur128-dev
-Standards-Version: 4.1.4
+Standards-Version: 4.5.1
 Homepage: https://launchpad.net/~mc-1/+archive/audioTools
 
 Package: rms-leveler
 Architecture: any
-Depends: ${misc:Depends}, ladspa-sdk
-Description: LADSPA plugins to limit or gain stereo audio to -20dB RMS
+Depends: ${misc:Depends}, ladspa-sdk, ${shlibs:Depends}
+Description: LADSPA plugins to limit or
+ gain stereo audio to -20dB RMS

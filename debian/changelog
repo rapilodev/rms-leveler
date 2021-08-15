@@ -1,9 +1,14 @@
+rms-leveler (0.05.02~hirsute) hirsute; urgency=low
+  * add ebur128-limiter-3s.c
+  * add ebur128-leveler-3s.c
+ -- Milan Chrobok <mc@radiopiloten.de>  Sun, 15 Aug 2021 20:00:00 +0330
+
 rms-leveler (0.04~hirsute) hirsute; urgency=low
   * ebur128-limiter-6s.c: add
   * update documentation
   * add spdx headers
   * remove CamelCase
- -- Milan Chrobok <mc@radiopiloten.de>  Sun, 15 Aug 2019 18:00:00 +0330
+ -- Milan Chrobok <mc@radiopiloten.de>  Sun, 15 Aug 2021 18:00:00 +0330
 
 rms-leveler (0.03~hirsute) hirsute; urgency=low
   * hirsute build

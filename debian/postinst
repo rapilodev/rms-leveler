@@ -1,8 +1,0 @@
-#! /bin/sh
-
-#mkdir -p /usr/lib/ladspa/
-#cp rmsLeveler.so /usr/lib/ladspa/
-
-exit 0
-
-#DEBHELPER#
