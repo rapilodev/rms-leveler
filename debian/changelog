@@ -1,3 +1,13 @@
+rms-leveler (0.05.03~bionic) bionic; urgency=low
+  * add ebur128-limiter-3s.c
+  * add ebur128-leveler-3s.c
+ -- Milan Chrobok <mc@radiopiloten.de>  Sun, 15 Aug 2021 20:00:00 +0330
+
+rms-leveler (0.05.03~focal) focal; urgency=low
+  * add ebur128-limiter-3s.c
+  * add ebur128-leveler-3s.c
+ -- Milan Chrobok <mc@radiopiloten.de>  Sun, 15 Aug 2021 20:00:00 +0330
+
 rms-leveler (0.05.02~hirsute) hirsute; urgency=low
   * add ebur128-limiter-3s.c
   * add ebur128-leveler-3s.c
