@@ -8,31 +8,23 @@
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
 const int debug = 0;
-const double maxChannels = 2;
-
-// target rms level, should be -20 DB
-const double TARGET_RMS = -20.0;
-
+const double maxChannels = 2.0;
+// target loudness, should be -20 DB
+const double TARGET_LOUDNESS = -20.0;
 // long term measurement window
-const double BUFFER_DURATION1 = 6;
-const double BUFFER_DURATION2 = 3;
+const double BUFFER_DURATION1 = 6.0;
+const double BUFFER_DURATION2 = 3.0;
 const double BUFFER_DURATION3 = 0.4;
-
 // how often update statistics
 const double ADJUST_RATE = 0.333;
-
 // compression start = -3dB
 const double compressionStart = 0.707945784;
-
 // maximum level = -1dB
 const double MAX_LEVEL = 0.891250938;
-
 // amplitude limit to what DC offset is not removed
 const double dcOffsetLimit = 0.005;
-
-// minimum level = -40dB =0.01
-const double MIN_RMS = -40;
-
+// minimum loudness = -40dB =0.01
+const double MIN_LOUDNESS = -40.0;
 // max amplication change per second
 const double MAX_CHANGE = 0.7;
 
@@ -63,7 +55,7 @@ struct Window {
 };
 
 void initWindow(struct Window* window, double duration, double rate) {
-    window->dataSize = duration * rate;
+    window->dataSize = (unsigned long) (duration * rate);
     window->data = (LADSPA_Data*) calloc(window->dataSize, sizeof(LADSPA_Data));
     window->square = (double*) calloc(window->dataSize, sizeof(double));
     window->sum = 0;
@@ -81,18 +73,15 @@ void initWindow(struct Window* window, double duration, double rate) {
     window->oldAmplification = 1.0;
 }
 
-
 inline void addWindowData(struct Window* window, LADSPA_Data value) {
     window->sum -= window->data[window->index];
     window->data[window->index] = value;
-    //if (value<0.01){        window->index--;
     window->sum += window->data[window->index];
 }
 
 inline void sumWindowData(struct Window* window) {
     double value = window->data[window->index];
     window->sumSquare -= window->square[window->index];
-    //if
     window->square[window->index] = value * value;
     window->sumSquare += window->square[window->index];
 }
@@ -134,7 +123,6 @@ inline void moveWindow(struct Window* window) {
         window->adjustPosition -= window->adjustRate;
 
     window->position += window->deltaPosition;
-
 }
 
 struct Channel {
@@ -182,10 +170,6 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
         window3 = &channel->window3;
         initWindow(window3, BUFFER_DURATION3, h->rate);
 
-        //LADSPA_Data* centerData = window1->data + ( sizeof(LADSPA_Data) * window1->dataSize ) / 2;
-        //window2->data = centerData - ( window2->dataSize * sizeof(LADSPA_Data) ) / 2;
-        //window3->data = centerData - ( window3->dataSize * sizeof(LADSPA_Data) ) / 2;
-
         channel->amplification = 0.0;
         channel->oldAmplification = 0.0;
         channel->oldAmplificationSmoothed = 0.0;
@@ -194,7 +178,6 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
 }
 
 static void cleanup(LADSPA_Handle handle) {
-    //fprintf(stderr, "cleanup\n");
     Leveler * h = (Leveler *) handle;
     free(h->left.window1.data);
     free(h->left.window1.square);
@@ -231,62 +214,35 @@ inline double getRmsValue(const double rmsSum, const double size) {
     return 20.0 * log10(sqrt(sum));
 }
 
-inline double getAmplification(const double rms, const double oldRms, const double oldAmp) {
-    //if (rms < MIN_RMS) rms = MIN_RMS;
-    if (rms < MIN_RMS)
+inline double getAmplification(const double loudness, const double oldLoudness, const double oldAmp) {
+
+    if (loudness < MIN_LOUDNESS)
         return oldAmp;
 
-    // get target factor from rms delta
-    double amp = pow(10., (TARGET_RMS - rms) / 20.0);
+    // get target factor from loudness delta
+    double amp = pow(10., (TARGET_LOUDNESS - loudness) / 20.0);
     if (isnan(amp))
         amp = 1.;
     if (amp == 0.)
         amp = 1.;
 
     // on decreasing loudness do not increase amplification
-    if ((amp > 1.0) && (rms <= oldRms))
+    if ((amp > 1.0) && (loudness <= oldLoudness))
         amp = oldAmp;
-    //if (rms <= oldRms) amp = oldAmp;
 
     return amp;
 }
 
-/*
-inline double interpolateAmplification(const double amp, const double oldAmp, unsigned long pos, const unsigned long maxPos) {
+inline double interpolateAmplification(const double amp, const double oldAmp, double pos, const double maxPos) {
     if (pos > maxPos)
         pos = maxPos;
     if (pos < 0)
         pos = 0;
-    double proportion = (double) pos / maxPos;
-    double amplification = (proportion * amp) + ((1.0 - proportion) * oldAmp);
-    //fprintf(stderr, "%lu %lu %f %f\n", pos, maxPos, proportion,amplification);
-    return amplification;
-}
-*/
-inline double interpolateAmplification(const double amp, const double oldAmp, unsigned long pos, const unsigned long maxPos) {
-    if (pos > maxPos)
-        pos = maxPos;
-    if (pos < 0)
-        pos = 0;
-    double x = (double) pos / maxPos;
-
-    // linear
-    //double proportion = x;
-
-    // smoothstep
+    double x = pos / maxPos;
     double proportion = x * x * (3 - 2 * x);
-
-    // smootherstep
-    //double proportion =  x * x * x * (x * (x * 6 - 15) + 10);
-
-    // smootheststep
-    //double proportion = x * x * x * x * (x * (x * (-20.0 * x + 70.0) - 84.0) + 35.0);
-
     double amplification = (proportion * amp) + ((1.0 - proportion) * oldAmp);
-    //fprintf(stderr, "%lu %lu %f %f\n", pos, maxPos, proportion,amplification);
     return amplification;
 }
-
 
 // compress by logarithm function (up to 10)
 // scale by compressionFactor to limit value to -1 dB
@@ -322,50 +278,20 @@ void calcWindowAmplification(struct Window* window) {
     window->oldAmplification = window->amplification;
     window->amplification = getAmplification(window->rms, window->oldRms, window->amplification);
 
-    
     double limit = window->oldAmplification + window->maxAmpChange;
     if (window->amplification > limit) {
         window->amplification = limit;
     }
-    
-
 }
 
 void printWindow(struct Window* window, int isLast) {
     if (debug == 1) {
-        fprintf(stderr, "%.1f\t%2.3f\t%2.3f\t%2.3f", window->position, window->rms, (TARGET_RMS - window->rms), window->amplification);
+        fprintf(stderr, "%.1f\t%2.3f\t%2.3f\t%2.3f", window->position, window->rms, (TARGET_LOUDNESS - window->rms), window->amplification);
         if (isLast) {
             fprintf(stderr, "\n");
         } else {
             fprintf(stderr, "  ");
         }
-    }
-}
-
-void getMinAmp(struct Channel* channel, struct Window* window1, struct Window* window2, struct Window* window3) {
-    int min = 1;
-    double a1 = window1->amplification;
-    double a2 = window2->amplification;
-    double a3 = window3->amplification;
-
-    if ((a1 < a2) && (a1 < a3))
-        min = 1;
-    if ((a2 < a1) && (a2 < a3))
-        min = 2;
-    if ((a3 < a1) && (a3 < a2))
-        min = 3;
-
-    if (min == 1) {
-        channel->amplification = window1->amplification;
-        channel->oldAmplification = window1->oldAmplification;
-    }
-    if (min == 2) {
-        channel->amplification = window2->amplification;
-        channel->oldAmplification = window2->oldAmplification;
-    }
-    if (min == 3) {
-        channel->amplification = window3->amplification;
-        channel->oldAmplification = window3->oldAmplification;
     }
 }
 
@@ -380,14 +306,8 @@ void getAvgAmp(struct Channel* channel, struct Window* window1, struct Window* w
 
 }
 
-
-
-
 static void run(LADSPA_Handle handle, unsigned long samples) {
     Leveler * h = (Leveler *) handle;
-
-    //if (debug==1)
-    //fprintf(stderr, "run %lu samples, buffer=%d, rate=%lu\n", samples, h->dataSize, h->rate);
 
     int c = 0;
     for (c = 0; c < maxChannels; c++) {
@@ -411,9 +331,6 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             sumWindowData(window2);
             sumWindowData(window3);
 
-            // direct value
-            //double ampFactor = channel->amplification;
-
             // interpolate with shifted adjust position
             double ampFactor = interpolateAmplification(channel->amplification, channel->oldAmplification, window1->adjustPosition,
                     window1->adjustRate);
@@ -436,18 +353,13 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             }
 
             if ((window1->adjustPosition == 0) || (window2->adjustPosition == 0) || (window3->adjustPosition == 0)) {
-                //getMinAmp(channel, window1, window2, window3);
                 getAvgAmp(channel, window1, window2, window3);
-                //channel->amplification = window1->amplification;
-                //channel->oldAmplification = window1->oldAmplification;
             }
 
             moveWindow(window1);
             moveWindow(window2);
             moveWindow(window3);
-
         }
-
     }
 }
 
