@@ -22,7 +22,13 @@ There are no parameters necessary. Instead there are separate plugins for differ
 * rms_limiter_3s
 * rms_leveler_6s
 * rms_limiter_6s
-* rms_leveler_10s
-* rms_limiter_10s
+* ebur128_leveler_3s
+* ebur128_limiter_3s
 * ebur128_leveler_6s
 * ebur128_limiter_6s
+
+Examples:
+* export LADSPA_PATH=/usr/lib/ladspa/
+* ffmpeg -i easy.wav -af ladspa=file=/usr/lib/ladspa/rms-leveler-3s.so:rms_leveler_3s output1.wav
+* ffmpeg -i easy.wav -af ladspa=file=/usr/lib/ladspa/ebur128-leveler-3s.so:ebur128_leveler_3s output2.wav
+* liquidsoap 'out(ladspa.rms_leveler_3s(mksafe(audio_to_stereo(input.http("http://ice.rosebud-media.de:8000/88vier-low")))))'
