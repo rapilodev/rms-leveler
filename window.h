@@ -1,3 +1,6 @@
+//  SPDX-FileCopyrightText: 2016 Milan Chrobok
+//  SPDX-License-Identifier: GPL-3.0-or-later
+
 #ifndef window_h
 #define window_h
 

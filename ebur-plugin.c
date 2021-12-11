@@ -10,6 +10,7 @@
 #include <math.h>
 #include "ebur128.h"
 #include "amplify.h"
+#include "stereo-plugin.h"
 
 extern const int IS_LEVELER;
 extern const double BUFFER_DURATION1;

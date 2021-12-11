@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "amplify.h"
+#include "stereo-plugin.h"
 
 extern const int IS_LEVELER;
 extern const double BUFFER_DURATION1;
@@ -113,17 +114,5 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
         }
     }
 }
-
-static const char * c_port_names[4] = { "Input - Left Channel", "Input - Right Channel", "Output - Left Channel", "Output - Right Channel" };
-
-static LADSPA_PortDescriptor c_port_descriptors[4] = { LADSPA_PORT_AUDIO | LADSPA_PORT_INPUT, LADSPA_PORT_AUDIO | LADSPA_PORT_INPUT,
-        LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT, LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT };
-
-static const LADSPA_PortRangeHint psPortRangeHints[4] = {
-    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 },
-    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 },
-    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 },
-    { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 }
-};
 
 #endif
