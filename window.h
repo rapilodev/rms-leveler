@@ -1,22 +1,20 @@
-#ifndef leveler_h
-#define leveler_h
+#ifndef window_h
+#define window_h
 
-// channel indexes
-#define IN_LEFT    0
-#define IN_RIGHT   1
-#define OUT_LEFT   2
-#define OUT_RIGHT  3
+// amplitude limit to what DC offset is not removed
+const double dcOffsetLimit = 0.005;
 
 struct Window {
 	int active;
+    double duration;
     unsigned long size;
     unsigned long dataSize;
     LADSPA_Data* data;
     double* square;
     double sumSquare;
     double sum;
-    double rms;
-    double oldRms;
+    double loudness;
+    double oldLoudness;
     double position;
     double deltaPosition;
     unsigned long index;
@@ -28,39 +26,18 @@ struct Window {
     double oldAmplification;
 };
 
-struct Channel {
-    LADSPA_Data* in;
-    LADSPA_Data* out;
-
-    double amplification;
-    double oldAmplification;
-    double oldAmplificationSmoothed;
-
-    struct Window window1;
-    struct Window window2;
-    struct Window window3;
-};
-
-// define our handler type
-typedef struct {
-    struct Channel* channels[2];
-    struct Channel left;
-    struct Channel right;
-    unsigned long rate;
-} Leveler;
-
-
 void initWindow(struct Window* window, double duration, double rate, double max_change, double adjust_rate) {
 	if (duration) {
 		window->active = 1;
+		window->duration = duration;
 		window->dataSize = (unsigned long) (duration * rate);
 		window->data = (LADSPA_Data*) calloc(window->dataSize, sizeof(LADSPA_Data));
 		window->square = (double*) calloc(window->dataSize, sizeof(double));
 	}
 	window->sum = 0;
     window->sumSquare = 0;
-    window->rms = 0.0;
-    window->oldRms = 0.0;
+    window->loudness = 0.0;
+    window->oldLoudness = 0.0;
     window->size = 0;
     window->position = 0.0;
     window->index = 0;
@@ -118,6 +95,13 @@ inline void moveWindow(struct Window* window) {
         window->adjustPosition -= window->adjustRate;
 
     window->position += window->deltaPosition;
+}
+
+inline double getWindowDcOffset(struct Window* window) {
+    double dcOffset = window->sum / window->size;
+    if ((dcOffset > -dcOffsetLimit) && (dcOffset < dcOffsetLimit))
+        return 0.0;
+    return dcOffset;
 }
 
 #endif

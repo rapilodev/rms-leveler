@@ -1,17 +1,10 @@
 //  SPDX-FileCopyrightText: 2016 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <stdlib.h> 
-#include <ladspa.h>
-#include <stdio.h>
-#include <math.h>
-
-#include "leveler.h"
-#include "amplify.h"
 #include "single-window-plugin.c"
 
 // set 1 for leveler or 0 for limiter
-const int IS_LEVELER = 1;
+const int IS_LEVELER = 0;
 // long term measurement window
 const double BUFFER_DURATION1 = 3.0;
 
