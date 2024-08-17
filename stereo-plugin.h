@@ -5,6 +5,13 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <unistd.h>
+
+#define BROADCAST_ADDRESS "255.255.255.255"
+#define BROADCAST_PORT 65432
 
 static const char * c_port_names[4] = {
     "Left In",
@@ -59,4 +66,46 @@ void file_log(char* log_dir, const char* log_filename, double l, double r) {
     }
     fprintf(log_file, "%s\t%2.3f\t%2.3f\n", formattedTime, l, r);
     fclose(log_file);
+}
+
+void send_broadcast_message(const char *filename, double l, double r) {
+    int broadcast_socket = socket(AF_INET, SOCK_DGRAM, 0);
+    if (broadcast_socket < 0) {
+        fprintf(stderr, "Error creating broadcast socket: %s\n", strerror(errno));
+        return;
+    }
+
+    int broadcast_enable = 1;
+    if (setsockopt(broadcast_socket, SOL_SOCKET, SO_BROADCAST, &broadcast_enable, sizeof(broadcast_enable)) < 0) {
+        fprintf(stderr, "Error enabling broadcast: %s\n", strerror(errno));
+        close(broadcast_socket);
+        return;
+    }
+
+    struct sockaddr_in broadcast_addr;
+    memset(&broadcast_addr, 0, sizeof(broadcast_addr));
+    broadcast_addr.sin_family = AF_INET;
+    broadcast_addr.sin_addr.s_addr = inet_addr(BROADCAST_ADDRESS);
+    broadcast_addr.sin_port = htons(BROADCAST_PORT);
+
+    time_t now;
+    time(&now);
+    struct tm *localTime = localtime(&now);
+    char formattedTime[20];
+    strftime(formattedTime, sizeof(formattedTime), "%Y-%m-%d %H:%M:%S",
+            localTime);
+
+    char broadcast_message[256];
+    snprintf(broadcast_message, sizeof(broadcast_message),
+        "%s\t%s\t%2.3f\t%2.3f\n\0",
+        formattedTime, filename, l, r
+    );
+
+    ssize_t bytes_sent = sendto(broadcast_socket, broadcast_message, strlen(broadcast_message), 0,
+                                (struct sockaddr*)&broadcast_addr, sizeof(broadcast_addr));
+    if (bytes_sent < 0) {
+        fprintf(stderr, "Error sending broadcast message: %s\n", strerror(errno));
+    }
+
+    close(broadcast_socket);
 }

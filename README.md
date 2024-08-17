@@ -28,55 +28,70 @@
 **1. Basic File Processing with FFmpeg:**
 
 - **Level a Stereo Audio File (RMS Leveler with 3s Window):**
-  ```bash
-  export LADSPA_PATH=/usr/lib/ladspa/
-  ffmpeg -i input.wav -af ladspa=file=/usr/lib/ladspa/rms-leveler-3s.so:rms_leveler_3s output.wav
-  ```
+
+```bash
+export LADSPA_PATH=/usr/lib/ladspa/
+ffmpeg -i input.wav -af ladspa=file=/usr/lib/ladspa/rms-leveler-3s.so:rms_leveler_3s output.wav
+```
 
 - **Apply LUFS Limiting (EBU-R128 Limiter with 6s Window):**
-  ```bash
-  ffmpeg -i input.wav -af ladspa=file=/usr/lib/ladspa/ebur128-limiter-6s.so:ebur128_limiter_6s output_limited.wav
-  ```
+
+```bash
+ffmpeg -i input.wav -af ladspa=file=/usr/lib/ladspa/ebur128-limiter-6s.so:ebur128_limiter_6s output_limited.wav
+```
 
 **2. Real-Time Audio Processing with Liquidsoap:**
 
 - **Normalize a Live Audio Stream (RMS Leveler with 6s Window):**
-  ```bash
-  liquidsoap 'out(ladspa.rms_leveler_6s(input.http("http://example.com/stream")))'
-  ```
+
+```bash
+liquidsoap 'out(ladspa.rms_leveler_6s(input.http("http://example.com/stream")))'
+```
 
 - **Broadcast with LUFS Leveling (EBU-R128 Leveler with 3s Window):**
-  ```bash
-  liquidsoap 'out(ladspa.ebur128_leveler_3s(input.http("http://example.com/stream")))'
-  ```
+
+```bash
+liquidsoap 'out(ladspa.ebur128_leveler_3s(input.http("http://example.com/stream")))'
+```
 
 **4. Detailed Logging and Analysis:**
 
 - **Monitor LUFS Levels Over Time (EBU-R128 Monitor with 6s Window):**
-  ```bash
-  liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.ebur128_monitor_a_6s(radio); out(radio)'
-  ```
+
+```bash
+liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.ebur128_monitor_a_6s(radio); out(radio)'
+```
 
 - **Log RMS Values Before and After Processing (Using Liquidsoap):**
-  ```bash
-  liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.rms_monitor_a_6s(radio);radio=ladspa.rms_leveler_3s(radio);radio=ladspa.rms_monitor_b_6s(radio); out(radio)'
-  ```
+
+```bash
+liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.rms_monitor_a_6s(radio);radio=ladspa.rms_leveler_3s(radio);radio=ladspa.rms_monitor_b_6s(radio); out(radio)'
+```
 
 ### Additional Use Cases
 
 **Batch Processing:**
 
 - **Batch Level Multiple Files (RMS Leveler with 3s Window):**
-  ```bash
-  for file in *.wav; do
-      ffmpeg -i "$file" -af ladspa=file=/usr/lib/ladspa/rms-leveler-3s.so:rms_leveler_3s "leveled_$file"
-  done
+
+```bash
+for file in *.wav; do
+    ffmpeg -i "$file" -af ladspa=file=/usr/lib/ladspa/rms-leveler-3s.so:rms_leveler_3s "leveled_$file"
+done
   ```
 
-**Integrating with Other Tools:**
+### Integrating with Other Tools:
 
-- **Integrate with Audacity:**
+**Integrate with Audacity:**
   1. Install LADSPA plugins in the appropriate directory.
   2. In Audacity, go to Effects > LADSPA and select the desired plugin, such as `rms_leveler_3s`.
   3. Apply the effect to smooth out volume levels in your audio project.
 
+**Read Data from Broadcast:**
+
+  1. Data is send to broadcast port 65432, where it can be collected from
+```bash
+nc -luk 65432
+2024-08-17 23:21:25 monitor-rms-a.log   -19.892 -20.137
+2024-08-17 23:21:25 monitor-rms-b.log   -19.788 -19.832
+```

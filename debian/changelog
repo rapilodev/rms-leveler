@@ -1,3 +1,7 @@
+rms-leveler (0.08~noble) noble; urgency=low
+  * *-monitor-plugin.c: add sending broadcast in port 65432
+ -- Milan Chrobok <mc@radiopiloten.de>  Wed, 17 Aug 2024 23:00:00 +0330
+
 rms-leveler (0.07~noble) noble; urgency=low
   * add monitor plugins
   * stereo-plugin.h: log and log_file
