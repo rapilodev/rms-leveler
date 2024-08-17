@@ -106,6 +106,8 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
         }
         print_log(rms_left, rms_right);
         file_log(h->log_dir, LOG_FILENAME, rms_left, rms_right);
+        send_broadcast_message(LOG_FILENAME, rms_left, rms_right);
+
     }
 }
 

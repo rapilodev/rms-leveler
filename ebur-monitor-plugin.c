@@ -107,6 +107,7 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
         }
         print_log(loudness_l, loudness_r);
         file_log(h->log_dir, LOG_FILENAME, loudness_l, loudness_r);
+        send_broadcast_message(LOG_FILENAME, loudness_l, loudness_r);
     }
 }
 
