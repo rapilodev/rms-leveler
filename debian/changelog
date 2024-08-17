@@ -1,3 +1,11 @@
+rms-leveler (0.07~noble) noble; urgency=low
+  * add monitor plugins
+  * stereo-plugin.h: log and log_file
+  * debian/install: update
+  * debian/source/options: dont add .git
+  * debian/install: add rms-limiter to package
+ -- Milan Chrobok <mc@radiopiloten.de>  Wed, 17 Aug 2024 20:00:00 +0330
+
 rms-leveler (0.06.01~noble) noble; urgency=low
   * noble build
  -- Milan Chrobok <mc@radiopiloten.de>  Wed, 01 May 2024 20:00:00 +0330
