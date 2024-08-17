@@ -1,3 +1,28 @@
+rms-leveler (0.06.01~noble) noble; urgency=low
+  * noble build
+ -- Milan Chrobok <mc@radiopiloten.de>  Wed, 01 May 2024 20:00:00 +0330
+
+rms-leveler (0.06.01~jammy) jammy; urgency=low
+  * jammy build
+ -- Milan Chrobok <mc@radiopiloten.de>  Sat, 11 Dec 2021 20:00:00 +0330
+
+rms-leveler (0.06.01~hirsute) hirsute; urgency=low
+  * port of 0.06.01
+ -- Milan Chrobok <mc@radiopiloten.de>  Sat, 11 Dec 2021 20:00:00 +0330
+
+rms-leveler (0.06.01~focal) focal; urgency=low
+  * port of 0.06.01
+ -- Milan Chrobok <mc@radiopiloten.de>  Sat, 11 Dec 2021 20:00:00 +0330
+
+rms-leveler (0.06.01~bionic) bionic; urgency=low
+  * Rename rms_leveler_6s to rms_leveler_6s_multi
+  * Rename rms_limiter_6s to rms_limiter_6s_multi
+  * Add rms_leveler_6s without multiple windows
+  * Add rms_limiter_6s without multiple windows
+  * Add support for Carla host
+  * Reduce redundant code
+ -- Milan Chrobok <mc@radiopiloten.de>  Sat, 11 Dec 2021 20:00:00 +0330
+
 rms-leveler (0.05.03~bionic) bionic; urgency=low
   * add ebur128-limiter-3s.c
   * add ebur128-leveler-3s.c
