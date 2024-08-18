@@ -24,10 +24,14 @@ const double MIN_LOUDNESS = -40.0;
 // max amplication change per second
 const double MAX_CHANGE = 0.7;
 
+inline double getDb(double a) {
+    if (a == 0.0) a = 0.0000000000001;
+    return 20.0 * log10(sqrt(a));
+}
+
 inline double getRmsValue(const double rmsSum, const double size) {
     double sum = rmsSum / size;
-    if (sum == 0.0) sum = 0.0000000000001;
-    return 20.0 * log10(sqrt(sum));
+    return getDb(sum);
 }
 
 inline double getAmplification(const double loudness, const double oldLoudness, const double oldAmp) {

@@ -4,6 +4,8 @@ CFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
 LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
 
 all:
+	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC -o peak-monitor-a-6s.so peak-monitor-a-6s.c
+	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC -o peak-monitor-b-6s.so peak-monitor-b-6s.c
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC -o rms-leveler-0.3s.so rms-leveler-0.3s.c
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC -o rms-leveler-1s.so rms-leveler-1s.c
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC -o rms-leveler-3s.so rms-leveler-3s.c

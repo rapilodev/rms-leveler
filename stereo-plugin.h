@@ -34,17 +34,17 @@ static const LADSPA_PortRangeHint psPortRangeHints[4] = {
     { .HintDescriptor = 0, .LowerBound = 0, .UpperBound = 0 }
 };
 
-void print_log(double l, double r) {
+void print_log(const char* LOG_ID, double l, double r) {
     time_t now;
     time(&now);
     struct tm *localTime = localtime(&now);
     char formattedTime[20];
     strftime(formattedTime, sizeof(formattedTime), "%Y-%m-%d %H:%M:%S",
             localTime);
-    fprintf(stderr, "%s %2.3f\t%2.3f\n", formattedTime, l, r);
+    fprintf(stderr, "%s %s\t%2.3f\t%2.3f\n", formattedTime, LOG_ID, l, r);
 }
 
-void file_log(char* log_dir, const char* log_filename, double l, double r) {
+void file_log(char* log_dir, const char* LOG_ID, double l, double r) {
     time_t now;
     time(&now);
     struct tm *localTime = localtime(&now);
@@ -56,8 +56,8 @@ void file_log(char* log_dir, const char* log_filename, double l, double r) {
     strftime(formattedDate, sizeof(formattedDate), "%Y-%m-%d", localTime);
 
     char path[256];
-    snprintf(path, sizeof(path), "%s/%s-%s", log_dir,
-            formattedDate, log_filename);
+    snprintf(path, sizeof(path), "%s/%s-monitor-%s.log", log_dir,
+            formattedDate, LOG_ID);
     FILE *log_file = fopen(path, "a");
     if (log_file == NULL) {
         fprintf(stderr, "%s Failed to open log file %s: %s.\n",
@@ -97,7 +97,7 @@ void send_broadcast_message(const char *filename, double l, double r) {
 
     char broadcast_message[256];
     snprintf(broadcast_message, sizeof(broadcast_message),
-        "%s\t%s\t%2.3f\t%2.3f\n\0",
+        "%s\t%s\t%2.3f\t%2.3f\n",
         formattedTime, filename, l, r
     );
 

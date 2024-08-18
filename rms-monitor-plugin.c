@@ -12,7 +12,7 @@
 #include "stereo-plugin.h"
 
 extern const double BUFFER_DURATION1;
-extern const char *LOG_FILENAME;
+extern const char *LOG_ID;
 
 struct Channel {
     LADSPA_Data* in;
@@ -104,9 +104,9 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             if (c==0) rms_left = rms;
             if (c==1) rms_right = rms;
         }
-        print_log(rms_left, rms_right);
-        file_log(h->log_dir, LOG_FILENAME, rms_left, rms_right);
-        send_broadcast_message(LOG_FILENAME, rms_left, rms_right);
+        print_log(LOG_ID, rms_left, rms_right);
+        file_log(h->log_dir, LOG_ID, rms_left, rms_right);
+        send_broadcast_message(LOG_ID, rms_left, rms_right);
 
     }
 }

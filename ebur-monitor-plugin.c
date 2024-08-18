@@ -14,7 +14,7 @@
 
 const double SECONDS = 1000.0;
 extern const double BUFFER_DURATION1;
-extern const char *LOG_FILENAME;
+extern const char *LOG_ID;
 
 struct EburChannel {
     LADSPA_Data *in;
@@ -105,9 +105,9 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             ebur128_destroy(&channel->ebur128);
             channel->ebur128 = ebur128_init(1, h->rate, EBUR128_MODE_I);
         }
-        print_log(loudness_l, loudness_r);
-        file_log(h->log_dir, LOG_FILENAME, loudness_l, loudness_r);
-        send_broadcast_message(LOG_FILENAME, loudness_l, loudness_r);
+        print_log(LOG_ID, loudness_l, loudness_r);
+        file_log(h->log_dir, LOG_ID, loudness_l, loudness_r);
+        send_broadcast_message(LOG_ID, loudness_l, loudness_r);
     }
 }
 

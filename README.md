@@ -9,6 +9,7 @@
 - **Signal Boosting:** Leveler plugins can boost signals below -40dB up to -20dB RMS, enhancing low-volume audio.
 - **EBU-R128 Compliance:** EBU-R128 plugins measure volume in LUFS using `libebur128` for broadcast-standard compliance.
 - **Monitoring Capabilities:** Monitor plugins log RMS or LUFS values to a file with timestamps, allowing detailed post-processing analysis.
+- **Peak Monitoring:** New peak monitoring plugins provide insight into peak levels over a 6-second window, ideal for detecting clipping or other peak-related issues.
 
 ### Available Plugins
 - **RMS Levelers & Limiters:** For different window sizes (0.3s, 1s, 3s, 6s)
@@ -19,9 +20,13 @@
 - **EBU-R128 Levelers & Limiters:** For broadcast compliance (3s and 6s windows)
   - `ebur128_leveler_3s`, `ebur128_limiter_3s`
   - `ebur128_leveler_6s`, `ebur128_limiter_6s`
-- **Monitoring Plugins:** To log and compare RMS or LUFS values
-  - `rms_monitor_a_6s`, `rms_monitor_b_6s`
-  - `ebur127_monitor_a_6s`, `ebur127_monitor_b_6s`
+- **Monitoring Plugins:** To log and compare RMS, LUFS, or Peak values
+  - **RMS Monitoring:**
+    - `rms_monitor_a_6s`, `rms_monitor_b_6s`
+  - **LUFS Monitoring:**
+    - `ebur128_monitor_a_6s`, `ebur128_monitor_b_6s`
+  - **Peak Monitoring:**
+    - `peak_monitor_a_6s`, `peak_monitor_b_6s`
 
 ### Examples
 
@@ -65,7 +70,13 @@ liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.ebur128_
 - **Log RMS Values Before and After Processing (Using Liquidsoap):**
 
 ```bash
-liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.rms_monitor_a_6s(radio);radio=ladspa.rms_leveler_3s(radio);radio=ladspa.rms_monitor_b_6s(radio); out(radio)'
+liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.rms_monitor_a_6s(radio); radio=ladspa.rms_leveler_3s(radio); radio=ladspa.rms_monitor_b_6s(radio); out(radio)'
+```
+
+- **Monitor Peak Levels (Using Liquidsoap):**
+
+```bash
+liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.peak_monitor_a_6s(radio); radio=ladspa.peak_monitor_b_6s(radio); out(radio)'
 ```
 
 ### Additional Use Cases
@@ -78,7 +89,7 @@ liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.rms_moni
 for file in *.wav; do
     ffmpeg -i "$file" -af ladspa=file=/usr/lib/ladspa/rms-leveler-3s.so:rms_leveler_3s "leveled_$file"
 done
-  ```
+```
 
 ### Integrating with Other Tools:
 
@@ -89,9 +100,12 @@ done
 
 **Read Data from Broadcast:**
 
-  1. Data is send to broadcast port 65432, where it can be collected from
+  1. Data is sent to broadcast port 65432, where it can be collected from:
+  
 ```bash
 nc -luk 65432
-2024-08-17 23:21:25 monitor-rms-a.log   -19.892 -20.137
-2024-08-17 23:21:25 monitor-rms-b.log   -19.788 -19.832
+2024-08-17 23:21:25 rms-a   -19.892 -20.137
+2024-08-17 23:21:25 rms-b   -19.788 -19.832
+2024-08-17 23:21:25 peak-a   -2.432  -1.987
+2024-08-17 23:21:25 peak-b   -2.289  -1.998
 ```

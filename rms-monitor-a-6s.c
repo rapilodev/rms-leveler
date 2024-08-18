@@ -5,7 +5,7 @@
 
 // long term measurement window
 const double BUFFER_DURATION1 = 6.0;
-const char *LOG_FILENAME = "monitor-rms-a.log";
+const char *LOG_ID = "rms-a";
 
 static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b3e5,
     .Label = "rms_monitor_a_6s", .Name = "RMS monitor 6 seconds window",
