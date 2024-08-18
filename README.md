@@ -22,11 +22,11 @@
   - `ebur128_leveler_6s`, `ebur128_limiter_6s`
 - **Monitoring Plugins:** To log and compare RMS, LUFS, or Peak values
   - **RMS Monitoring:**
-    - `rms_monitor_a_6s`, `rms_monitor_b_6s`
+    - `rms_monitor_in_6s`, `rms_monitor_out_6s`
   - **LUFS Monitoring:**
-    - `ebur128_monitor_a_6s`, `ebur128_monitor_b_6s`
+    - `ebur128_monitor_in_6s`, `ebur128_monitor_out_6s`
   - **Peak Monitoring:**
-    - `peak_monitor_a_6s`, `peak_monitor_b_6s`
+    - `peak_monitor_in_6s`, `peak_monitor_out_6s`
 
 ### Examples
 
@@ -64,19 +64,19 @@ liquidsoap 'out(ladspa.ebur128_leveler_3s(input.http("http://example.com/stream"
 - **Monitor LUFS Levels Over Time (EBU-R128 Monitor with 6s Window):**
 
 ```bash
-liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.ebur128_monitor_a_6s(radio); out(radio)'
+liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.ebur128_monitor_in_6s(radio); out(radio)'
 ```
 
 - **Log RMS Values Before and After Processing (Using Liquidsoap):**
 
 ```bash
-liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.rms_monitor_a_6s(radio); radio=ladspa.rms_leveler_3s(radio); radio=ladspa.rms_monitor_b_6s(radio); out(radio)'
+liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.rms_monitor_in_6s(radio); radio=ladspa.rms_leveler_3s(radio); radio=ladspa.rms_monitor_out_6s(radio); out(radio)'
 ```
 
 - **Monitor Peak Levels (Using Liquidsoap):**
 
 ```bash
-liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.peak_monitor_a_6s(radio); radio=ladspa.peak_monitor_b_6s(radio); out(radio)'
+liquidsoap 'radio=input.http("http://example.com/stream"); radio=ladspa.peak_monitor_in_6s(radio); radio=ladspa.peak_monitor_out_6s(radio); out(radio)'
 ```
 
 ### Additional Use Cases

@@ -10,7 +10,7 @@ const double BUFFER_DURATION1 = 6.0;
 const double BUFFER_DURATION2 = 3.0;
 const double BUFFER_DURATION3 = 0.4;
 
-static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b3e5,
+static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b402,
     .Label = "rms_limiter_6s_multi", .Name = "RMS limiter -20dBFS, multiple windows",
     .Maker = "Milan Chrobok", .Copyright = "GPL 3",
     .PortCount = 4, .connect_port = connect_port,

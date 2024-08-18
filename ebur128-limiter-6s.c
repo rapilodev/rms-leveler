@@ -8,7 +8,7 @@ const int IS_LEVELER = 0;
 // long term measurement window
 const double BUFFER_DURATION1 = 6.0;
 
-static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b3e5,
+static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b304,
     .Label = "ebur128_limiter_6s", .Name = "EBU R128 limiter -20dBFS, 6 seconds window",
     .Maker = "Milan Chrobok", .Copyright = "GPL 3",
     .PortCount = 4, .connect_port = connect_port,

@@ -1,14 +1,14 @@
 //  SPDX-FileCopyrightText: 2024 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "peak-monitor-plugin.c"
+#include "rms-monitor-plugin.c"
 
 // long term measurement window
 const double BUFFER_DURATION1 = 6.0;
-const char *LOG_ID = "peak-b";
+const char *LOG_ID = "rms-out";
 
-static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b3e5,
-    .Label = "peak_monitor_b_6s", .Name = "peak monitor 6 seconds window",
+static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b404,
+    .Label = "rms_monitor_out_6s", .Name = "rms monitor out, 6 seconds window",
     .Maker = "Milan Chrobok", .Copyright = "GPL 3",
     .PortCount = 4, .connect_port = connect_port,
     .PortNames = c_port_names, .PortRangeHints = psPortRangeHints,

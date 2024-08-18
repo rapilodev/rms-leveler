@@ -1,14 +1,14 @@
-//  SPDX-FileCopyrightText: 2016 Milan Chrobok
+//  SPDX-FileCopyrightText: 2024 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "ebur-monitor-plugin.c"
+#include "peak-monitor-plugin.c"
 
 // long term measurement window
 const double BUFFER_DURATION1 = 6.0;
-const char *LOG_ID = "ebur-b";
+const char *LOG_ID = "peak-out";
 
-static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b3e5,
-    .Label = "ebur128_monitor_b_6s", .Name = "EBU R128 monitor, 6 seconds window",
+static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b308,
+    .Label = "peak_monitor_out_6s", .Name = "peak monitor out, 6 seconds window",
     .Maker = "Milan Chrobok", .Copyright = "GPL 3",
     .PortCount = 4, .connect_port = connect_port,
     .PortNames = c_port_names, .PortRangeHints = psPortRangeHints,
@@ -20,3 +20,4 @@ const LADSPA_Descriptor * ladspa_descriptor(unsigned long i) {
     if (i == 0) return &c_ladspa_descriptor;
     return 0;
 }
+

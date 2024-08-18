@@ -8,7 +8,7 @@ const int IS_LEVELER = 0;
 // long term measurement window
 const double BUFFER_DURATION1 = 1.0;
 
-static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b3e5,
+static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b315,
     .Label = "rms_limiter_1s", .Name = "RMS limiter -20dBFS, 1 seconds window",
     .Maker = "Milan Chrobok", .Copyright = "GPL 3",
     .PortCount = 4, .connect_port = connect_port,

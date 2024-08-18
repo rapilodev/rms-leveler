@@ -5,10 +5,10 @@
 
 // long term measurement window
 const double BUFFER_DURATION1 = 6.0;
-const char *LOG_ID = "ebur128-a";
+const char *LOG_ID = "ebur128-in";
 
-static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b3e5,
-    .Label = "ebur128_monitor_a_6s", .Name = "EBU R128 monitor, 6 seconds window",
+static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b305,
+    .Label = "ebur128_monitor_in_6s", .Name = "EBU R128 monitor in, 6 seconds window",
     .Maker = "Milan Chrobok", .Copyright = "GPL 3",
     .PortCount = 4, .connect_port = connect_port,
     .PortNames = c_port_names, .PortRangeHints = psPortRangeHints,
