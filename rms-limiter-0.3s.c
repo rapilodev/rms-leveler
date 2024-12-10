@@ -11,7 +11,7 @@ const double BUFFER_DURATION1 = 0.3;
 static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b314,
     .Label = "rms_limiter_0.3s", .Name = "RMS limiter -20dBFS, 0.3 seconds window",
     .Maker = "Milan Chrobok", .Copyright = "GPL 3",
-    .PortCount = 4, .connect_port = connect_port,
+    .PortCount = 5, .connect_port = connect_port,
     .PortNames = c_port_names, .PortRangeHints = psPortRangeHints,
     .PortDescriptors = c_port_descriptors,
     .instantiate = instantiate, .run = run, .cleanup = cleanup

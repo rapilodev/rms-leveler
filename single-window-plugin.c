@@ -33,6 +33,7 @@ typedef struct {
     struct Channel left;
     struct Channel right;
     unsigned long rate;
+    double input_gain;
 } Leveler;
 
 static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate) {
@@ -44,6 +45,7 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
     h->left.in = NULL;
     h->right.in = NULL;
     h->rate = rate;
+    h->input_gain = 0.;
 
     int i = 0;
     for (i = 0; i < maxChannels; i++) {
@@ -70,10 +72,11 @@ static void cleanup(LADSPA_Handle handle) {
 
 static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_Data * port) {
     Leveler * h = (Leveler *) handle;
-    if (num == 0)   h->left.in = port;
-    if (num == 1)  h->right.in = port;
-    if (num == 2)  h->left.out = port;
+    if (num == 0) h->left.in = port;
+    if (num == 1) h->right.in = port;
+    if (num == 2) h->left.out = port;
     if (num == 3) h->right.out = port;
+    if (num == 4) h->input_gain = pow(10.0, *port / 20.0);
 }
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
@@ -86,7 +89,7 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 
         unsigned long s;
         for (s = 0; s < samples; s++) {
-            LADSPA_Data input = (channel == NULL) ? 0 : channel->in[s];
+            LADSPA_Data input = (channel == NULL) ? 0 : channel->in[s] * h->input_gain;
             prepareWindow(window1);
             addWindowData(window1, input);
             sumWindowData(window1);
@@ -101,7 +104,6 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             if (channel->out != NULL) {
                 channel->out[s] = (LADSPA_Data) value;
             }
-
 #ifdef DEBUG
             printWindow(window1, (channel == h->channels[1]));
 #endif

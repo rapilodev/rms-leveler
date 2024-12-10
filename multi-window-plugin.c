@@ -35,6 +35,7 @@ typedef struct {
     struct Channel left;
     struct Channel right;
     unsigned long rate;
+    double input_gain;
 } Leveler;
 
 static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate) {
@@ -46,6 +47,7 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
     h->left.in = NULL;
     h->right.in = NULL;
     h->rate = rate;
+    h->input_gain = 0.;
 
     int i = 0;
     for (i = 0; i < maxChannels; i++) {
@@ -139,7 +141,7 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
         unsigned long s;
         for (s = 0; s < samples; s++) {
 
-            LADSPA_Data input = (channel == NULL) ? 0 : channel->in[s];
+            LADSPA_Data input = (channel == NULL) ? 0 : channel->in[s] * h->input_gain;
             if (window1->active){
                 prepareWindow(window1);
                 addWindowData(window1, input);
