@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef single_window_plugin
-#define single_window_plugin
+#define single_window_plugi
 
 #include <stdlib.h>
 #include <ladspa.h>
@@ -45,7 +45,7 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
     h->left.in = NULL;
     h->right.in = NULL;
     h->rate = rate;
-    h->input_gain = 0.;
+    h->input_gain = 1.0;
 
     int i = 0;
     for (i = 0; i < maxChannels; i++) {

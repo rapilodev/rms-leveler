@@ -1,3 +1,6 @@
+rms-leveler (0.11.04~noble) noble; urgency=low
+  * fix input gain preset
+ -- Milan Chrobok <mc@radiopiloten.de>  Fri, 21 Mar 2025 23:00:00 +0330
 
 rms-leveler (0.11.01~noble) noble; urgency=low
   * add input_gain option to *_limiter and *_leveler plugins to initially amplify
