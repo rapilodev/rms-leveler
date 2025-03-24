@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef single_window_plugin
-#define single_window_plugi
+#define single_window_plugin
 
 #include <stdlib.h>
 #include <ladspa.h>
