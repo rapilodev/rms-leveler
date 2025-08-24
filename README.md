@@ -10,13 +10,17 @@
 - **EBU-R128 Compliance:** EBU-R128 plugins measure volume in LUFS using `libebur128` for broadcast-standard compliance.
 - **Monitoring Capabilities:** Monitor plugins log RMS or LUFS values to a file with timestamps, allowing detailed post-processing analysis.
 - **Peak Monitoring:** New peak monitoring plugins provide insight into peak levels over a 6-second window, ideal for detecting clipping or other peak-related issues.
+- **Instant Mode (No Delay)** Plugin `rms_limiter_instant_1m` uses a 1-minute rolling RMS window with zero latency
 
 ### Available Plugins
-- **RMS Levelers & Limiters:** For different window sizes (0.3s, 1s, 3s, 6s)
-  - `rms_leveler_0.3s`, `rms_limiter_0.3s`
-  - `rms_leveler_1s`, `rms_limiter_1s`
-  - `rms_leveler_3s`, `rms_limiter_3s`
-  - `rms_leveler_6s`, `rms_limiter_6s`
+- **RMS Levelers & Limiters:**
+    - With look-ahead windows (0.3s, 1s, 3s, 6s)
+      - `rms_leveler_0.3s`, `rms_limiter_0.3s`
+      - `rms_leveler_1s`, `rms_limiter_1s`
+      - `rms_leveler_3s`, `rms_limiter_3s`
+      - `rms_leveler_6s`, `rms_limiter_6s`
+    - Instant output without delay, window size (1m):
+      - `rms_limiter_instant_1m`
 - **EBU-R128 Levelers & Limiters:** For broadcast compliance (3s and 6s windows)
   - `ebur128_leveler_3s`, `ebur128_limiter_3s`
   - `ebur128_leveler_6s`, `ebur128_limiter_6s`
@@ -101,7 +105,7 @@ done
 **Read Data from Broadcast:**
 
   1. Data is sent to broadcast port 65432, where it can be collected from:
-  
+
 ```bash
 nc -luk 65432
 2024-08-17 23:21:25 rms-a   -19.892 -20.137
