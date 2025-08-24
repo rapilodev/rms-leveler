@@ -1,3 +1,7 @@
+rms-leveler (0.12~noble) noble; urgency=low
+  * add rms-limiter-instant-1m.so with 1 minute window and without look-ahead
+ -- Milan Chrobok <mc@radiopiloten.de>  Fri, 24 Aug 2025 23:00:00 +0330
+
 rms-leveler (0.11.05~noble) noble; urgency=low
   * fix include, Thanks to Jero
  -- Milan Chrobok <mc@radiopiloten.de>  Fri, 24 Mar 2025 23:00:00 +0330
