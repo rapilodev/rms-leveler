@@ -14,7 +14,8 @@ rms-leveler-6s.so /usr/lib/ladspa/
 rms-limiter-0.3s.so /usr/lib/ladspa/
 rms-limiter-1s.so /usr/lib/ladspa/
 rms-limiter-3s.so /usr/lib/ladspa/
-rms-limiter-6s-multi.so /usr/lib/ladspa/
 rms-limiter-6s.so /usr/lib/ladspa/
+rms-limiter-6s-multi.so /usr/lib/ladspa/
+rms-limiter-instant-1m.so /usr/lib/ladspa/
 rms-monitor-in-6s.so /usr/lib/ladspa/
 rms-monitor-out-6s.so /usr/lib/ladspa/
