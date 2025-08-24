@@ -48,6 +48,7 @@ inline double getAmplification(const double loudness, const double oldLoudness, 
 inline double interpolateAmplification(const double amp, const double oldAmp, double pos, const double maxPos) {
     if (pos > maxPos) pos = maxPos;
     if (pos < 0)      pos = 0;
+    if (amp == oldAmp || pos == maxPos) return amp;
     double x = pos / maxPos;
     double proportion = x * x * (3 - 2 * x);
     double amplification = (proportion * amp) + ((1.0 - proportion) * oldAmp);
