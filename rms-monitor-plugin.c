@@ -11,6 +11,7 @@
 #include "amplify.h"
 #include "stereo-plugin.h"
 
+extern const int LOOK_AHEAD;
 extern const double BUFFER_DURATION1;
 extern const char *LOG_ID;
 
@@ -49,7 +50,7 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
         struct Channel* channel = h->channels[i];
         struct Window* window1;
         window1 = &channel->window1;
-        initWindow(window1, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
+        initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
     }
     return (LADSPA_Handle) h;
 }

@@ -5,6 +5,8 @@
 
 // long term measurement window
 const double BUFFER_DURATION1 = 6.0;
+// use look ahead window, 1 = precise (delayed), 0 = instant (no delay)
+const int LOOK_AHEAD = 1;
 const char *LOG_ID = "rms-in";
 
 static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b403,

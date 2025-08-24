@@ -9,6 +9,7 @@ const double dcOffsetLimit = 0.005;
 
 struct Window {
 	int active;
+    int look_ahead;
     double duration;
     unsigned long size;
     unsigned long dataSize;
@@ -29,7 +30,8 @@ struct Window {
     double oldAmplification;
 };
 
-void initWindow(struct Window* window, double duration, double rate, double max_change, double adjust_rate) {
+void initWindow(struct Window* window, int look_ahead, double duration, double rate, double max_change, double adjust_rate) {
+    window->look_ahead = look_ahead;
 	if (duration) {
 		window->active = 1;
 		window->duration = duration;

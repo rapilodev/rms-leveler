@@ -13,6 +13,7 @@
 #include "stereo-plugin.h"
 
 extern const int IS_LEVELER;
+extern const int LOOK_AHEAD;
 extern const double BUFFER_DURATION1;
 const double SECONDS = 1000.0;
 
@@ -55,7 +56,7 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
 
         struct Window* window;
         window = &channel->window;
-        initWindow(window, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
+        initWindow(window, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
 
         channel->ebur128 = ebur128_init(1, h->rate, EBUR128_MODE_LRA);
         ebur128_set_max_window(channel->ebur128, (unsigned long) (window->duration*SECONDS));

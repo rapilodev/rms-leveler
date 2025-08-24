@@ -12,6 +12,7 @@
 #include "stereo-plugin.h"
 
 extern const int IS_LEVELER;
+extern const int LOOK_AHEAD;
 extern const double BUFFER_DURATION1;
 extern const double BUFFER_DURATION2;
 extern const double BUFFER_DURATION3;
@@ -54,15 +55,15 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
         struct Channel* channel = h->channels[i];
         struct Window* window1;
         window1 = &channel->window1;
-        initWindow(window1, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
+        initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
 
         struct Window* window2;
         window2 = &channel->window2;
-        initWindow(window2, BUFFER_DURATION2, h->rate, MAX_CHANGE, ADJUST_RATE);
+        initWindow(window2, LOOK_AHEAD, BUFFER_DURATION2, h->rate, MAX_CHANGE, ADJUST_RATE);
 
         struct Window* window3;
         window3 = &channel->window3;
-        initWindow(window3, BUFFER_DURATION3, h->rate, MAX_CHANGE, ADJUST_RATE);
+        initWindow(window3, LOOK_AHEAD, BUFFER_DURATION3, h->rate, MAX_CHANGE, ADJUST_RATE);
 
         channel->amplification = 0.0;
         channel->oldAmplification = 0.0;

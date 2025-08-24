@@ -5,6 +5,8 @@
 
 // set 1 for leveler or 0 for limiter
 const int IS_LEVELER = 0;
+// use look ahead window, 1 = precise (delayed), 0 = instant (no delay)
+const int LOOK_AHEAD = 1;
 // long term measurement window
 const double BUFFER_DURATION1 = 6.0;
 const double BUFFER_DURATION2 = 3.0;

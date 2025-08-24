@@ -12,6 +12,7 @@
 #include "stereo-plugin.h"
 
 extern const int IS_LEVELER;
+extern const int LOOK_AHEAD;
 extern const double BUFFER_DURATION1;
 
 struct Channel {
@@ -52,7 +53,7 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
         struct Channel* channel = h->channels[i];
         struct Window* window1;
         window1 = &channel->window1;
-        initWindow(window1, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
+        initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
 
         channel->amplification = 0.0;
         channel->oldAmplification = 0.0;
@@ -93,14 +94,15 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             prepareWindow(window1);
             addWindowData(window1, input);
             sumWindowData(window1);
-
             // interpolate with shifted adjust position
             double ampFactor = interpolateAmplification(channel->amplification, channel->oldAmplification,
                 window1->adjustPosition, window1->adjustRate);
-
             // read from playPosition, amplify and limit
-            double value = (window1->data[window1->playPosition] - getWindowDcOffset(window1)) * ampFactor;
-            value = limit(value);
+            double value =
+                (LOOK_AHEAD == 1)
+                ? window1->data[window1->playPosition] - getWindowDcOffset(window1)
+                : input;
+            value = limit(ampFactor * value);
             if (channel->out != NULL) {
                 channel->out[s] = (LADSPA_Data) value;
             }
