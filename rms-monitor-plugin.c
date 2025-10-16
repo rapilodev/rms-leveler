@@ -52,6 +52,7 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
         window1 = &channel->window1;
         initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
     }
+    setup_socket();
     return (LADSPA_Handle) h;
 }
 
@@ -62,6 +63,7 @@ static void cleanup(LADSPA_Handle handle) {
     free(h->right.window1.data);
     free(h->right.window1.square);
     free(handle);
+    close_socket();
 }
 
 static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_Data * port) {
@@ -108,7 +110,6 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
         print_log(LOG_ID, rms_left, rms_right);
         file_log(h->log_dir, LOG_ID, rms_left, rms_right);
         send_broadcast_message(LOG_ID, rms_left, rms_right);
-
     }
 }
 

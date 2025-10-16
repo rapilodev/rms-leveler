@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #define BROADCAST_ADDRESS "255.255.255.255"
 #define BROADCAST_PORT 65432
@@ -71,10 +72,18 @@ void file_log(char* log_dir, const char* LOG_ID, double l, double r) {
     fclose(log_file);
 }
 
-void send_broadcast_message(const char *filename, double l, double r) {
-    int broadcast_socket = socket(AF_INET, SOCK_DGRAM, 0);
+static int broadcast_socket = -1;
+static struct sockaddr_in broadcast_addr;
+static pthread_mutex_t broadcast_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void setup_socket() {
+    if (broadcast_socket >= 0) return;
+    pthread_mutex_lock(&broadcast_mutex);
+    broadcast_socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (broadcast_socket < 0) {
         fprintf(stderr, "Error creating broadcast socket: %s\n", strerror(errno));
+        broadcast_socket = -1;
+        pthread_mutex_unlock(&broadcast_mutex);
         return;
     }
 
@@ -82,15 +91,19 @@ void send_broadcast_message(const char *filename, double l, double r) {
     if (setsockopt(broadcast_socket, SOL_SOCKET, SO_BROADCAST, &broadcast_enable, sizeof(broadcast_enable)) < 0) {
         fprintf(stderr, "Error enabling broadcast: %s\n", strerror(errno));
         close(broadcast_socket);
+        broadcast_socket = -1;
+        pthread_mutex_unlock(&broadcast_mutex);
         return;
     }
-
-    struct sockaddr_in broadcast_addr;
     memset(&broadcast_addr, 0, sizeof(broadcast_addr));
     broadcast_addr.sin_family = AF_INET;
-    broadcast_addr.sin_addr.s_addr = inet_addr(BROADCAST_ADDRESS);
     broadcast_addr.sin_port = htons(BROADCAST_PORT);
+    broadcast_addr.sin_addr.s_addr = inet_addr(BROADCAST_ADDRESS);
+    pthread_mutex_unlock(&broadcast_mutex);
+}
 
+void send_broadcast_message(const char *filename, double l, double r) {
+    if (broadcast_socket < 0) return;
     time_t now;
     time(&now);
     struct tm *localTime = localtime(&now);
@@ -104,11 +117,17 @@ void send_broadcast_message(const char *filename, double l, double r) {
         formattedTime, filename, l, r
     );
 
-    ssize_t bytes_sent = sendto(broadcast_socket, broadcast_message, strlen(broadcast_message), 0,
+    pthread_mutex_lock(&broadcast_mutex);
+    ssize_t bytes_sent = sendto(broadcast_socket, broadcast_message, strlen(broadcast_message), MSG_DONTWAIT,
                                 (struct sockaddr*)&broadcast_addr, sizeof(broadcast_addr));
-    if (bytes_sent < 0) {
-        fprintf(stderr, "Error sending broadcast message: %s\n", strerror(errno));
-    }
+    pthread_mutex_unlock(&broadcast_mutex);
+    if (bytes_sent < 0) fprintf(stderr, "Error sending broadcast message: %s\n", strerror(errno));
+}
 
+void close_socket() {
+    if (broadcast_socket < 0) return;
+    pthread_mutex_lock(&broadcast_mutex);
     close(broadcast_socket);
+    broadcast_socket = -1;
+    pthread_mutex_unlock(&broadcast_mutex);
 }

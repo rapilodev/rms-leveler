@@ -46,11 +46,13 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor *d, unsigned long rate)
     h->log_dir = getenv("MONITOR_LOG_DIR");
     if (h->log_dir == NULL)
         h->log_dir = "/var/log/monitor";
+    setup_socket();
     return (LADSPA_Handle) h;
 }
 
 static void cleanup(LADSPA_Handle handle) {
     free(handle);
+    close_socket();
 }
 
 static void connect_port(const LADSPA_Handle handle, unsigned long num,
