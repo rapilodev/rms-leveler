@@ -10,7 +10,7 @@ const int LOOK_AHEAD = 1;
 const char *LOG_ID = "rms-out";
 
 static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b404,
-    .Label = "rms_monitor_out_6s", .Name = "rms monitor out, 6 seconds window",
+    .Label = "rms_monitor_out_6s", .Name = "RMS monitor out, 6 seconds window",
     .Maker = "Milan Chrobok", .Copyright = "GPL 3",
     .PortCount = 4, .connect_port = connect_port,
     .PortNames = c_port_names, .PortRangeHints = psPortRangeHints,
