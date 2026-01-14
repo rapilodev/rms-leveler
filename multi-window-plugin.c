@@ -149,14 +149,14 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
                 sumWindowData(window1);
             }
             if (window2->active){
-                prepareWindow(window1);
-                addWindowData(window1, input);
-                sumWindowData(window1);
+                prepareWindow(window2);
+                addWindowData(window2, input);
+                sumWindowData(window2);
             }
             if (window3->active){
-                prepareWindow(window1);
-                addWindowData(window1, input);
-                sumWindowData(window1);
+                prepareWindow(window3);
+                addWindowData(window3, input);
+                sumWindowData(window3);
             }
 
             // interpolate with shifted adjust position
