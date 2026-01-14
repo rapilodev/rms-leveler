@@ -4,7 +4,7 @@
 #include "single-window-plugin.c"
 
 // set 1 for leveler or 0 for limiter
-const int IS_LEVELER = 1;
+const int IS_LEVELER = 0;
 // long term measurement window
 const double BUFFER_DURATION1 = 60.0;
 // use look ahead window, 1 = precise (delayed), 0 = instant (no delay)
