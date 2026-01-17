@@ -45,9 +45,8 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
     if (h->log_dir == NULL)
         h->log_dir = "/var/log/monitor";
 
-    int i = 0;
-    for (i = 0; i < maxChannels; i++) {
-        struct Channel* channel = h->channels[i];
+    for (int c = 0; c < maxChannels; c++) {
+        struct Channel* channel = h->channels[c];
         struct Window* window1;
         window1 = &channel->window1;
         initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
@@ -77,13 +76,11 @@ static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_D
 static void run(LADSPA_Handle handle, unsigned long samples) {
     Leveler * h = (Leveler *) handle;
 
-    int c = 0;
-    for (c = 0; c < maxChannels; c++) {
+    for (int c = 0; c < maxChannels; c++) {
         struct Channel* channel = h->channels[c];
         struct Window* window1 = &channel->window1;
 
-        unsigned long s;
-        for (s = 0; s < samples; s++) {
+        for (unsigned long s = 0; s < samples; s++) {
             LADSPA_Data input = (channel == NULL) ? 0 : channel->in[s];
             prepareWindow(window1);
             addWindowData(window1, input);
@@ -100,7 +97,7 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 
         double rms_left = 0.;
         double rms_right = 0.;
-        for (c = 0; c < maxChannels; c++) {
+        for (int c = 0; c < maxChannels; c++) {
             struct Channel* channel = h->channels[c];
             struct Window* window1 = &channel->window1;
             double rms = getRmsValue(window1->sumSquare, window1->size);

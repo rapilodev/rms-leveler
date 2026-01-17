@@ -50,9 +50,8 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
     h->rate = rate;
     h->input_gain = 1.0;
 
-    int i = 0;
-    for (i = 0; i < maxChannels; i++) {
-        struct Channel* channel = h->channels[i];
+    for (int c = 0; c < maxChannels; c++) {
+        struct Channel* channel = h->channels[c];
         struct Window* window1;
         window1 = &channel->window1;
         initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
@@ -132,15 +131,13 @@ void getAvgAmp(struct Channel* channel, struct Window* window1, struct Window* w
 static void run(LADSPA_Handle handle, unsigned long samples) {
     Leveler * h = (Leveler *) handle;
 
-    int c = 0;
-    for (c = 0; c < maxChannels; c++) {
+    for (int c = 0; c < maxChannels; c++) {
         struct Channel* channel = h->channels[c];
         struct Window* window1 = &channel->window1;
         struct Window* window2 = &channel->window2;
         struct Window* window3 = &channel->window3;
 
-        unsigned long s;
-        for (s = 0; s < samples; s++) {
+        for (unsigned long s = 0; s < samples; s++) {
 
             LADSPA_Data input = (channel == NULL) ? 0 : channel->in[s] * h->input_gain;
             if (window1->active){

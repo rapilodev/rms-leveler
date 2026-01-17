@@ -48,8 +48,7 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
     h->rate = rate;
     h->input_gain = 1.0;
 
-    int i = 0;
-    for (i = 0; i < maxChannels; i++) {
+    for (int i = 0; i < maxChannels; i++) {
         struct Channel* channel = h->channels[i];
         struct Window* window1;
         window1 = &channel->window1;

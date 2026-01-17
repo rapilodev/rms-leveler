@@ -50,8 +50,7 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
     h->rate = rate;
     h->input_gain = 1.0;
 
-    int i = 0;
-    for (i = 0; i < maxChannels; i++) {
+    for (int i = 0; i < maxChannels; i++) {
         struct EburChannel* channel = h->channels[i];
 
         struct Window* window;
@@ -90,13 +89,11 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
     EburLeveler * h = (EburLeveler *) handle;
     double loudness_window;
 
-    int c = 0;
-    for (c = 0; c < maxChannels; c++) {
+    for (int c = 0; c < maxChannels; c++) {
         struct EburChannel* channel = h->channels[c];
         struct Window* window = &channel->window;
 
-        unsigned long s;
-        for (s = 0; s < samples; s++) {
+        for (unsigned long s = 0; s < samples; s++) {
 
             prepareWindow(window);
             LADSPA_Data input = (channel == NULL) ? 0 : channel->in[s] * h->input_gain;
