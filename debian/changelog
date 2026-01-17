@@ -1,3 +1,11 @@
+rms-leveler (0.16~noble) noble; urgency=low
+  * replace tabs by spaces
+  * *plugin.c: define loop variables inline
+  * *plugin.c: fix limiters with using input gain
+  * rms-monitor-out-6s.c: fix label
+  * multi-window-plugin.c: fix initializing all windows
+ -- Milan Chrobok <mc@radiopiloten.de>  Wed, 18 Oct 2025 23:20:00 +0330
+
 rms-leveler (0.15~noble) noble; urgency=low
   * rms-monitor-out-6s.c: fix label
  -- Milan Chrobok <mc@radiopiloten.de>  Wed, 14 Oct 2025 23:20:00 +0330
