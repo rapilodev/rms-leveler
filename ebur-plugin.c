@@ -118,7 +118,7 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             // calculate amplification from EBU R128 values
             if (window->adjustPosition == 0) {
                 ebur128_loudness_window(channel->ebur128, (unsigned long) window->duration*SECONDS, &loudness_window);
-                calcWindowAmplification(window, loudness_window, IS_LEVELER);
+                calcWindowAmplification(window, loudness_window, IS_LEVELER, h->input_gain);
 
                 channel->amplification    = window->amplification;
                 channel->oldAmplification = window->oldAmplification;

@@ -175,13 +175,13 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 #endif
 
             if (window1->active && window1->adjustPosition == 0){
-                calcWindowAmplification(window1, getRmsValue(window1->sumSquare, window1->size), IS_LEVELER);
+                calcWindowAmplification(window1, getRmsValue(window1->sumSquare, window1->size), IS_LEVELER, h->input_gain);
             }
             if (window2->active && window2->adjustPosition == 0){
-                calcWindowAmplification(window2, getRmsValue(window2->sumSquare, window2->size), IS_LEVELER);
+                calcWindowAmplification(window2, getRmsValue(window2->sumSquare, window2->size), IS_LEVELER, h->input_gain);
             }
             if (window3->active && window3->adjustPosition == 0){
-                calcWindowAmplification(window3, getRmsValue(window3->sumSquare, window3->size), IS_LEVELER);
+                calcWindowAmplification(window3, getRmsValue(window3->sumSquare, window3->size), IS_LEVELER, h->input_gain);
             }
 
             if ( (window1->active && window1->adjustPosition == 0)

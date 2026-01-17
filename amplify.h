@@ -76,17 +76,25 @@ inline double limit(double value) {
     return amplitude;
 }
 
-void calcWindowAmplification(struct Window* window, double loudness, const int is_leveler) {
+void calcWindowAmplification(struct Window* window, double loudness, const int is_leveler, const double input_gain) {
     window->oldLoudness = window->loudness;
     window->loudness = loudness;
 
     window->oldAmplification = window->amplification;
     window->amplification = getAmplification(window->loudness, window->oldLoudness, window->amplification);
 
-    if (!is_leveler && window->amplification > 1.0 ) window->amplification = 1.0;
+    if (!is_leveler) {
+        if (window->loudness <= TARGET_LOUDNESS) {
+            double input_gain_linear = pow(10.0, input_gain / 20.0);
+            window->amplification = 1.0 / input_gain_linear;
+        }
+    }
     double limit = window->oldAmplification + window->maxAmpChange;
     if (window->amplification > limit) {
         window->amplification = limit;
+    }
+    if (!is_leveler && window->amplification > 1.0 ) {
+        window->amplification = 1.0;
     }
 }
 

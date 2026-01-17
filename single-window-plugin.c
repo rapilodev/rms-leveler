@@ -82,14 +82,11 @@ static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_D
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
     Leveler * h = (Leveler *) handle;
-
-    int c = 0;
-    for (c = 0; c < maxChannels; c++) {
+    for (int c = 0; c < maxChannels; c++) {
         struct Channel* channel = h->channels[c];
         struct Window* window1 = &channel->window1;
 
-        unsigned long s;
-        for (s = 0; s < samples; s++) {
+        for (unsigned long s = 0; s < samples; s++) {
             LADSPA_Data input = (channel == NULL) ? 0 : channel->in[s] * h->input_gain;
             prepareWindow(window1);
             addWindowData(window1, input);
@@ -111,7 +108,7 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 #endif
 
             if (window1->adjustPosition == 0)
-                calcWindowAmplification(window1, getRmsValue(window1->sumSquare, window1->size), IS_LEVELER);
+                calcWindowAmplification(window1, getRmsValue(window1->sumSquare, window1->size), IS_LEVELER, h->input_gain);
             channel->amplification    = window1->amplification;
             channel->oldAmplification = window1->oldAmplification;
             moveWindow(window1);
