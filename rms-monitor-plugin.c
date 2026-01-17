@@ -31,8 +31,21 @@ typedef struct {
     char *log_dir;
 } Leveler;
 
+void destroyLeveler(Leveler *h) {
+    if (h == NULL) return;
+    for (int i = 0; i < 2; i++) {
+        if (h->channels[1]) {
+            freeWindow(&h->channels[i]->window1);
+            free(h->channels[i]);
+            h->channels[i]=NULL;
+        }
+    }
+    free(h);
+}
+
 static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate) {
     Leveler * h = malloc(sizeof(Leveler));
+    if (h == NULL) return NULL;
     h->channels[0] = &h->left;
     h->channels[1] = &h->right;
     h->left.out = NULL;
@@ -45,24 +58,22 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
     if (h->log_dir == NULL)
         h->log_dir = "/var/log/monitor";
 
-    int i = 0;
-    for (i = 0; i < maxChannels; i++) {
-        struct Channel* channel = h->channels[i];
-        struct Window* window1;
-        window1 = &channel->window1;
-        initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
+    if (!initWindow(&h->channels[0]->window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE)) {
+        destroyLeveler(h);
+        return NULL;
     }
+    if (!initWindow(&h->channels[1]->window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE)) {
+        destroyLeveler(h);
+        return NULL;
+    }
+
     setup_socket();
     return (LADSPA_Handle) h;
 }
 
 static void cleanup(LADSPA_Handle handle) {
     Leveler * h = (Leveler *) handle;
-    free(h->left.window1.data);
-    free(h->left.window1.square);
-    free(h->right.window1.data);
-    free(h->right.window1.square);
-    free(handle);
+    destroyLeveler(h);
     close_socket();
 }
 

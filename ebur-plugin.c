@@ -40,6 +40,7 @@ typedef struct {
 
 static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate) {
     EburLeveler * h = malloc(sizeof(EburLeveler));
+    if (h == NULL) return NULL;
 
     h->channels[0] = &h->left;
     h->channels[1] = &h->right;
@@ -56,7 +57,10 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
 
         struct Window* window;
         window = &channel->window;
-        initWindow(window, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
+        if(!initWindow(window, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE)){
+            free(h);
+            return NULL;
+        };
 
         channel->ebur128 = ebur128_init(1, h->rate, EBUR128_MODE_LRA);
         ebur128_set_max_window(channel->ebur128, (unsigned long) (window->duration*SECONDS));

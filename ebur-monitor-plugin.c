@@ -34,6 +34,7 @@ typedef struct {
 
 static LADSPA_Handle instantiate(const LADSPA_Descriptor *d, unsigned long rate) {
     EburLeveler *h = malloc(sizeof(EburLeveler));
+    if (h == NULL) return NULL;
     h->channels[0] = &h->left;
     h->channels[1] = &h->right;
     h->left.out = NULL;

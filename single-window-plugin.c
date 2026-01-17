@@ -37,8 +37,21 @@ typedef struct {
     double input_gain;
 } Leveler;
 
+void destroyLeveler(Leveler *h) {
+    if (h == NULL) return;
+    for (int i = 0; i < maxChannels; i++) {
+        if (h->channels[1]) {
+            freeWindow(&h->channels[i]->window1);
+            free(h->channels[i]);
+            h->channels[i] = NULL;
+        }
+    }
+    free(h);
+}
+
 static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate) {
-    Leveler * h = malloc(sizeof(Leveler));
+    Leveler * h = calloc(sizeof(Leveler));
+    if (h == NULL) return NULL;
     h->channels[0] = &h->left;
     h->channels[1] = &h->right;
     h->left.out = NULL;
@@ -53,7 +66,10 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
         struct Channel* channel = h->channels[i];
         struct Window* window1;
         window1 = &channel->window1;
-        initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
+        if (!initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE)){
+            destroyLeveler(h);
+            return NULL;
+        }
 
         channel->amplification = 0.0;
         channel->oldAmplification = 0.0;
@@ -64,10 +80,8 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
 
 static void cleanup(LADSPA_Handle handle) {
     Leveler * h = (Leveler *) handle;
-    free(h->left.window1.data);
-    free(h->left.window1.square);
-    free(h->right.window1.data);
-    free(h->right.window1.square);
+    freeWindow(&(h->left.window1));
+    freeWindow(&(h->right.window1));
     free(handle);
 }
 

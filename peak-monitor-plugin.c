@@ -31,8 +31,10 @@ typedef struct {
     char *log_dir;
 } Leveler;
 
+
 static LADSPA_Handle instantiate(const LADSPA_Descriptor *d, unsigned long rate) {
     Leveler *h = malloc(sizeof(Leveler));
+    if (h == NULL) return NULL;
     h->channels[0] = &h->left;
     h->channels[1] = &h->right;
     h->left.out = NULL;

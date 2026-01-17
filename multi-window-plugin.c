@@ -39,8 +39,23 @@ typedef struct {
     double input_gain;
 } Leveler;
 
+void destroyLeveler(Leveler *h) {
+    if (h == NULL) return;
+    for (int i = 0; i < 2; i++) {
+        if (h->channels[1]) {
+            freeWindow(&h->channels[i]->window1);
+            freeWindow(&h->channels[i]->window2);
+            freeWindow(&h->channels[i]->window3);
+            free(h->channels[i]);
+            h->channels[i]=NULL;
+        }
+    }
+    free(h);
+}
+
 static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate) {
-    Leveler * h = malloc(sizeof(Leveler));
+    Leveler * h = calloc(sizeof(Leveler));
+    if (h == NULL) return NULL;
     h->channels[0] = &h->left;
     h->channels[1] = &h->right;
     h->left.out = NULL;
@@ -55,15 +70,24 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
         struct Channel* channel = h->channels[i];
         struct Window* window1;
         window1 = &channel->window1;
-        initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
+        if(!initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE)) {
+            destroyLeveler(h);
+            return NULL;
+        }
 
         struct Window* window2;
         window2 = &channel->window2;
-        initWindow(window2, LOOK_AHEAD, BUFFER_DURATION2, h->rate, MAX_CHANGE, ADJUST_RATE);
+        if(!initWindow(window2, LOOK_AHEAD, BUFFER_DURATION2, h->rate, MAX_CHANGE, ADJUST_RATE)) {
+            destroyLeveler(h);
+            return NULL;
+        }
 
         struct Window* window3;
         window3 = &channel->window3;
-        initWindow(window3, LOOK_AHEAD, BUFFER_DURATION3, h->rate, MAX_CHANGE, ADJUST_RATE);
+        if(!initWindow(window3, LOOK_AHEAD, BUFFER_DURATION3, h->rate, MAX_CHANGE, ADJUST_RATE)) {
+            destroyLeveler(h);
+            return NULL;
+        }
 
         channel->amplification = 0.0;
         channel->oldAmplification = 0.0;
@@ -93,7 +117,7 @@ static void cleanup(LADSPA_Handle handle) {
         free(h->right.window3.data);
         free(h->right.window3.square);
     }
-     free(handle);
+    free(handle);
 }
 
 static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_Data * port) {
