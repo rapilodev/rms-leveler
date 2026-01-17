@@ -122,9 +122,9 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 
 #ifdef DEBUG
                 if (c==0) fprintf(
-					stderr, "%.1f\t%2.3f\t%2.3f\t%2.3f\n",
-					window->position, loudness_window, input, value
-				);
+                    stderr, "%.1f\t%2.3f\t%2.3f\t%2.3f\n",
+                    window->position, loudness_window, input, value
+                );
 #endif
             }
             moveWindow(window);

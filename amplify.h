@@ -99,12 +99,12 @@ void calcWindowAmplification(struct Window* window, double loudness, const int i
 }
 
 void printWindow(struct Window* window, int isLast) {
-	fprintf(stderr, "%.1f\t%2.3f\t%2.3f\t%2.3f", window->position, window->loudness, (TARGET_LOUDNESS - window->loudness), window->amplification);
-	if (isLast) {
-		fprintf(stderr, "\n");
-	} else {
-		fprintf(stderr, "  ");
-	}
+    fprintf(stderr, "%.1f\t%2.3f\t%2.3f\t%2.3f", window->position, window->loudness, (TARGET_LOUDNESS - window->loudness), window->amplification);
+    if (isLast) {
+        fprintf(stderr, "\n");
+    } else {
+        fprintf(stderr, "  ");
+    }
 }
 
 #endif

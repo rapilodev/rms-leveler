@@ -8,7 +8,7 @@
 const double dcOffsetLimit = 0.005;
 
 struct Window {
-	int active;
+    int active;
     int look_ahead;
     double duration;
     unsigned long size;
@@ -32,14 +32,14 @@ struct Window {
 
 void initWindow(struct Window* window, int look_ahead, double duration, double rate, double max_change, double adjust_rate) {
     window->look_ahead = look_ahead;
-	if (duration) {
-		window->active = 1;
-		window->duration = duration;
-		window->dataSize = (unsigned long) (duration * rate);
-		window->data = (LADSPA_Data*) calloc(window->dataSize, sizeof(LADSPA_Data));
-		window->square = (double*) calloc(window->dataSize, sizeof(double));
-	}
-	window->sum = 0;
+    if (duration) {
+        window->active = 1;
+        window->duration = duration;
+        window->dataSize = (unsigned long) (duration * rate);
+        window->data = (LADSPA_Data*) calloc(window->dataSize, sizeof(LADSPA_Data));
+        window->square = (double*) calloc(window->dataSize, sizeof(double));
+    }
+    window->sum = 0;
     window->sumSquare = 0;
     window->loudness = 0.0;
     window->oldLoudness = 0.0;
@@ -55,14 +55,14 @@ void initWindow(struct Window* window, int look_ahead, double duration, double r
 }
 
 inline void addWindowData(struct Window* window, LADSPA_Data value) {
-	if (!window->active) return;
+    if (!window->active) return;
     window->sum -= window->data[window->index];
     window->data[window->index] = value;
     window->sum += window->data[window->index];
 }
 
 inline void sumWindowData(struct Window* window) {
-	if (!window->active) return;
+    if (!window->active) return;
     double value = window->data[window->index];
     window->sumSquare -= window->square[window->index];
     window->square[window->index] = value * value;
@@ -70,7 +70,7 @@ inline void sumWindowData(struct Window* window) {
 }
 
 inline void prepareWindow(struct Window* window) {
-	if (!window->active) return;
+    if (!window->active) return;
     //increase buffer size on start
     if (window->size < window->dataSize)
         window->size++;
@@ -85,9 +85,9 @@ inline void prepareWindow(struct Window* window) {
 }
 
 inline void moveWindow(struct Window* window) {
-	if (!window->active) return;
+    if (!window->active) return;
 
-	window->index += 1;
+    window->index += 1;
     if (window->index >= window->dataSize)
         window->index -= window->dataSize;
 
