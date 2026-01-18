@@ -1,3 +1,11 @@
+rms-leveler (0.17~noble) noble; urgency=low
+    *.c: Memory Cleanup
+    * remove channels from struct
+    * always free windows
+    * add 3db on leveler gate and idle limiter
+    * fix input gain (was already linear)
+ -- Milan Chrobok <mc@radiopiloten.de>  Wed, 19 Oct 2025 00:20:00 +0330
+
 rms-leveler (0.16~noble) noble; urgency=low
   * replace tabs by spaces
   * *plugin.c: define loop variables inline
