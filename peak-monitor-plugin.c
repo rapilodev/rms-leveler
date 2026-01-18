@@ -21,7 +21,6 @@ struct Channel {
 
 // define our handler type
 typedef struct {
-    struct Channel *channels[2];
     struct Channel left;
     struct Channel right;
     double peak_left;
@@ -31,18 +30,11 @@ typedef struct {
     char *log_dir;
 } Leveler;
 
+
 static LADSPA_Handle instantiate(const LADSPA_Descriptor *d, unsigned long rate) {
-    Leveler *h = malloc(sizeof(Leveler));
-    h->channels[0] = &h->left;
-    h->channels[1] = &h->right;
-    h->left.out = NULL;
-    h->right.out = NULL;
-    h->left.in = NULL;
-    h->right.in = NULL;
+    Leveler *h = calloc(1, sizeof(Leveler));
+    if (h == NULL) return NULL;
     h->rate = rate;
-    h->t = 0.;
-    h->peak_left = 0.;
-    h->peak_right = 0.;
     h->log_dir = getenv("MONITOR_LOG_DIR");
     if (h->log_dir == NULL)
         h->log_dir = "/var/log/monitor";
@@ -71,8 +63,9 @@ static void connect_port(const LADSPA_Handle handle, unsigned long num,
 static void run(LADSPA_Handle handle, unsigned long samples) {
     Leveler *h = (Leveler*) handle;
     double peaks[] = { h->peak_left, h->peak_right };
-    for (int c = 0; c < maxChannels; c++) {
-        struct Channel *channel = h->channels[c];
+    struct Channel* channels[] = {&h->left, &h->right};
+    for (int c = 0; c < ARRAY_LENGTH(channels); c++) {
+        struct Channel *channel = channels[c];
         if (channel == NULL || c >= 2)
             continue;
         for (unsigned long s = 0; s < samples; s++) {

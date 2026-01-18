@@ -30,14 +30,38 @@ struct Window {
     double oldAmplification;
 };
 
-void initWindow(struct Window* window, int look_ahead, double duration, double rate, double max_change, double adjust_rate) {
+void freeWindow(struct Window* window) {
+    if (window == NULL) return;
+    if (window->data != NULL) {
+        free(window->data);
+        window->data = NULL;
+    }
+    if (window->square != NULL) {
+        free(window->square);
+        window->square = NULL;
+    }
+}
+
+int initWindow(struct Window* window, int look_ahead, double duration, double rate, double max_change, double adjust_rate) {
+    if (window == NULL) return 0;
+    freeWindow(window);
     window->look_ahead = look_ahead;
-    if (duration) {
+    window->data = NULL;
+    window->square = NULL;
+    if (duration > 0) {
         window->active = 1;
         window->duration = duration;
         window->dataSize = (unsigned long) (duration * rate);
         window->data = (LADSPA_Data*) calloc(window->dataSize, sizeof(LADSPA_Data));
+        if (window->data == NULL) {
+            freeWindow(window);
+            return 0;
+        }
         window->square = (double*) calloc(window->dataSize, sizeof(double));
+        if (window->square == NULL) {
+            freeWindow(window);
+            return 0;
+        }
     }
     window->sum = 0;
     window->sumSquare = 0;
@@ -52,6 +76,7 @@ void initWindow(struct Window* window, int look_ahead, double duration, double r
     window->deltaPosition = 1.0 / rate;
     window->amplification = 1.0;
     window->oldAmplification = 1.0;
+    return 1;
 }
 
 inline void addWindowData(struct Window* window, LADSPA_Data value) {

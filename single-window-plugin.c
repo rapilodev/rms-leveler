@@ -30,59 +30,58 @@ struct Channel {
 
 // define our handler type
 typedef struct {
-    struct Channel* channels[2];
     struct Channel left;
     struct Channel right;
     unsigned long rate;
     double input_gain;
+    LADSPA_Data* input_gain_port;
 } Leveler;
 
+void destroyLeveler(Leveler *h) {
+    if (h == NULL) return;
+    freeWindow(&h->left.window1);
+    freeWindow(&h->right.window1);
+    free(h);
+}
+
 static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate) {
-    Leveler * h = malloc(sizeof(Leveler));
-    h->channels[0] = &h->left;
-    h->channels[1] = &h->right;
-    h->left.out = NULL;
-    h->right.out = NULL;
-    h->left.in = NULL;
-    h->right.in = NULL;
+    Leveler * h = calloc(1, sizeof(Leveler));
+    if (h == NULL) return NULL;
     h->rate = rate;
     h->input_gain = 1.0;
 
-    for (int i = 0; i < maxChannels; i++) {
-        struct Channel* channel = h->channels[i];
-        struct Window* window1;
-        window1 = &channel->window1;
-        initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
-
-        channel->amplification = 0.0;
-        channel->oldAmplification = 0.0;
-        channel->oldAmplificationSmoothed = 0.0;
+    if (!initWindow(&h->left.window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE)) {
+        destroyLeveler(h);
+        return NULL;
     }
+    if (!initWindow(&h->right.window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE)) {
+        destroyLeveler(h);
+        return NULL;
+    }
+
     return (LADSPA_Handle) h;
 }
 
 static void cleanup(LADSPA_Handle handle) {
     Leveler * h = (Leveler *) handle;
-    free(h->left.window1.data);
-    free(h->left.window1.square);
-    free(h->right.window1.data);
-    free(h->right.window1.square);
-    free(handle);
+    destroyLeveler(h);
 }
 
-static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_Data * port) {
+static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_Data *port) {
     Leveler * h = (Leveler *) handle;
     if (num == 0) h->left.in = port;
     if (num == 1) h->right.in = port;
     if (num == 2) h->left.out = port;
     if (num == 3) h->right.out = port;
-    if (num == 4) h->input_gain = pow(10.0, *port / 20.0);
+    if (num == 4) h->input_gain_port = port;
 }
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
     Leveler * h = (Leveler *) handle;
-    for (int c = 0; c < maxChannels; c++) {
-        struct Channel* channel = h->channels[c];
+    struct Channel* channels[] = {&h->left, &h->right};
+    h->input_gain = pow(10.0, *(h->input_gain_port) / 20.0);
+    for (int c = 0; c < ARRAY_LENGTH(channels); c++) {
+        struct Channel* channel = channels[c];
         struct Window* window1 = &channel->window1;
 
         for (unsigned long s = 0; s < samples; s++) {
@@ -103,7 +102,7 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
                 channel->out[s] = (LADSPA_Data) value;
             }
 #ifdef DEBUG
-            printWindow(window1, (channel == h->channels[1]));
+            printWindow(window1, c==ARRAY_LENGTH(channels)-1);
 #endif
 
             if (window1->adjustPosition == 0)

@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#define ARRAY_LENGTH(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define BROADCAST_ADDRESS "255.255.255.255"
 #define BROADCAST_PORT 65432
 

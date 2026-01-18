@@ -10,7 +10,6 @@
 #include <math.h>
 #include "window.h"
 
-const double maxChannels = 2.0;
 // target loudness, should be -20 DB
 const double TARGET_LOUDNESS = -20.0;
 // how often update statistics
@@ -23,6 +22,8 @@ const double MAX_LEVEL = 0.891250938;
 const double MIN_LOUDNESS = -40.0;
 // max amplication change per second
 const double MAX_CHANGE = 0.7;
+
+const double DB3 = sqrt(2);
 
 inline double getDb(double a) {
     if (a == 0.0) a = 0.0000000000001;
@@ -76,24 +77,28 @@ inline double limit(double value) {
     return amplitude;
 }
 
-void calcWindowAmplification(struct Window* window, double loudness, const int is_leveler, const double input_gain) {
+void calcWindowAmplification(struct Window* window, double loudness, const int IS_LEVELER, const double input_gain) {
     window->oldLoudness = window->loudness;
     window->loudness = loudness;
 
     window->oldAmplification = window->amplification;
-    window->amplification = getAmplification(window->loudness, window->oldLoudness, window->amplification);
+    const int IS_LIMITER = !IS_LEVELER;
 
-    if (!is_leveler) {
-        if (window->loudness <= TARGET_LOUDNESS) {
-            double input_gain_linear = pow(10.0, input_gain / 20.0);
-            window->amplification = 1.0 / input_gain_linear;
-        }
+    if (window->loudness < MIN_LOUDNESS || (IS_LIMITER && window->loudness <= TARGET_LOUDNESS)) {
+        // Compensate 3dB if leveler is gated or limiter is idle
+        window->amplification = DB3 * 1.0 / input_gain;
+        return;
+    } else {
+        // Active Leveling/Limiting
+        window->amplification = getAmplification(window->loudness, window->oldLoudness, window->amplification);
     }
-    double limit = window->oldAmplification + window->maxAmpChange;
-    if (window->amplification > limit) {
-        window->amplification = limit;
+    // Constraints (Slew Rate / Max Change)
+    double maxAllowed = window->oldAmplification + window->maxAmpChange;
+    if (window->amplification > maxAllowed) {
+        window->amplification = maxAllowed;
     }
-    if (!is_leveler && window->amplification > 1.0 ) {
+    // Hard Ceiling for Limiter mode
+    if (IS_LIMITER && window->amplification > 1.0 ) {
         window->amplification = 1.0;
     }
 }

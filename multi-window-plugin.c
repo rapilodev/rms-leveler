@@ -32,67 +32,54 @@ struct Channel {
 
 // define our handler type
 typedef struct {
-    struct Channel* channels[2];
     struct Channel left;
     struct Channel right;
     unsigned long rate;
     double input_gain;
 } Leveler;
 
+void destroyLeveler(Leveler *h) {
+    if (h == NULL) return;
+    freeWindow(&h->left.window1);
+    freeWindow(&h->left.window2);
+    freeWindow(&h->left.window3);
+    freeWindow(&h->right.window1);
+    freeWindow(&h->right.window2);
+    freeWindow(&h->right.window3);
+    free(h);
+}
+
 static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate) {
-    Leveler * h = malloc(sizeof(Leveler));
-    h->channels[0] = &h->left;
-    h->channels[1] = &h->right;
-    h->left.out = NULL;
-    h->right.out = NULL;
-    h->left.in = NULL;
-    h->right.in = NULL;
+    Leveler *h = calloc(1, sizeof(Leveler));
+    if (h == NULL) return NULL;
     h->rate = rate;
     h->input_gain = 1.0;
 
-    for (int c = 0; c < maxChannels; c++) {
-        struct Channel* channel = h->channels[c];
-        struct Window* window1;
-        window1 = &channel->window1;
-        initWindow(window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
-
-        struct Window* window2;
-        window2 = &channel->window2;
-        initWindow(window2, LOOK_AHEAD, BUFFER_DURATION2, h->rate, MAX_CHANGE, ADJUST_RATE);
-
-        struct Window* window3;
-        window3 = &channel->window3;
-        initWindow(window3, LOOK_AHEAD, BUFFER_DURATION3, h->rate, MAX_CHANGE, ADJUST_RATE);
-
+    struct Channel* channels[] = {&h->left, &h->right};
+    for (int c = 0; c < ARRAY_LENGTH(channels); c++) {
+        struct Channel* channel = channels[c];
         channel->amplification = 0.0;
         channel->oldAmplification = 0.0;
         channel->oldAmplificationSmoothed = 0.0;
+        if(!initWindow(&channel->window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE)) {
+            destroyLeveler(h);
+            return NULL;
+        }
+        if(!initWindow(&channel->window2, LOOK_AHEAD, BUFFER_DURATION2, h->rate, MAX_CHANGE, ADJUST_RATE)) {
+            destroyLeveler(h);
+            return NULL;
+        }
+        if(!initWindow(&channel->window3, LOOK_AHEAD, BUFFER_DURATION3, h->rate, MAX_CHANGE, ADJUST_RATE)) {
+            destroyLeveler(h);
+            return NULL;
+        }
     }
     return (LADSPA_Handle) h;
 }
 
 static void cleanup(LADSPA_Handle handle) {
     Leveler * h = (Leveler *) handle;
-
-    if (h->left.window1.active){
-        free(h->left.window1.data);
-        free(h->left.window1.square);
-        free(h->right.window1.data);
-        free(h->right.window1.square);
-    }
-    if (h->left.window2.active){
-        free(h->left.window2.data);
-        free(h->left.window2.square);
-        free(h->right.window2.data);
-        free(h->right.window2.square);
-    }
-    if (h->left.window3.active){
-        free(h->left.window3.data);
-        free(h->left.window3.square);
-        free(h->right.window3.data);
-        free(h->right.window3.square);
-    }
-     free(handle);
+    destroyLeveler(h);
 }
 
 static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_Data * port) {
@@ -125,14 +112,14 @@ void getAvgAmp(struct Channel* channel, struct Window* window1, struct Window* w
 
     channel->amplification = amp / sum;
     channel->oldAmplification = oldAmp / sum;
-
 }
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
     Leveler * h = (Leveler *) handle;
 
-    for (int c = 0; c < maxChannels; c++) {
-        struct Channel* channel = h->channels[c];
+    struct Channel* channels[] = {&h->left, &h->right};
+    for (int c = 0; c < ARRAY_LENGTH(channels); c++) {
+        struct Channel* channel = channels[c];
         struct Window* window1 = &channel->window1;
         struct Window* window2 = &channel->window2;
         struct Window* window3 = &channel->window3;
@@ -168,7 +155,7 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             }
 
 #ifdef DEBUG
-            printWindow(window1, (channel == h->channels[1]));
+            printWindow(window1, c ==  ARRAY_LENGTH(channels)-1 );
 #endif
 
             if (window1->active && window1->adjustPosition == 0){
@@ -182,7 +169,7 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
             }
 
             if ( (window1->active && window1->adjustPosition == 0)
-               || (window2->active && window2->adjustPosition == 0)
+              || (window2->active && window2->adjustPosition == 0)
               || (window3->active && window3->adjustPosition == 0)
             ) getAvgAmp(channel, window1, window2, window3);
 

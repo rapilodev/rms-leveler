@@ -30,7 +30,6 @@ struct EburChannel {
 
 // define our handler type
 typedef struct {
-    struct EburChannel* channels[2];
     struct EburChannel left;
     struct EburChannel right;
     unsigned long rate;
@@ -39,27 +38,24 @@ typedef struct {
 } EburLeveler;
 
 static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate) {
-    EburLeveler * h = malloc(sizeof(EburLeveler));
-
-    h->channels[0] = &h->left;
-    h->channels[1] = &h->right;
-    h->left.out = NULL;
-    h->right.out = NULL;
-    h->left.in = NULL;
-    h->right.in = NULL;
+    EburLeveler * h = calloc(1, sizeof(EburLeveler));
+    if (h == NULL) return NULL;
     h->rate = rate;
     h->input_gain = 1.0;
 
-    for (int i = 0; i < maxChannels; i++) {
-        struct EburChannel* channel = h->channels[i];
+    struct EburChannel* channels[] = {&h->left, &h->right};
+    for (int i = 0; i < ARRAY_LENGTH(channels); i++) {
+        struct EburChannel* channel = channels[i];
 
         struct Window* window;
         window = &channel->window;
-        initWindow(window, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE);
+        if(!initWindow(window, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE)){
+            free(h);
+            return NULL;
+        };
 
         channel->ebur128 = ebur128_init(1, h->rate, EBUR128_MODE_LRA);
         ebur128_set_max_window(channel->ebur128, (unsigned long) (window->duration*SECONDS));
-
         channel->amplification = 1.0;
         channel->oldAmplification = 1.0;
     }
@@ -70,7 +66,6 @@ static void cleanup(LADSPA_Handle handle) {
     EburLeveler * h = (EburLeveler *) handle;
     free(h->left.window.data);
     free(h->right.window.data);
-
     ebur128_destroy(&h->left.ebur128);
     ebur128_destroy(&h->right.ebur128);
     free(handle);
@@ -89,8 +84,9 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
     EburLeveler * h = (EburLeveler *) handle;
     double loudness_window;
 
-    for (int c = 0; c < maxChannels; c++) {
-        struct EburChannel* channel = h->channels[c];
+    struct EburChannel* channels[] = {&h->left, &h->right};
+    for (int c = 0; c < ARRAY_LENGTH(channels); c++) {
+        struct EburChannel* channel = channels[c];
         struct Window* window = &channel->window;
 
         for (unsigned long s = 0; s < samples; s++) {
