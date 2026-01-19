@@ -7,7 +7,7 @@
 const int LOOK_AHEAD = 1;
 // long term measurement window
 const double BUFFER_DURATION1 = 6.0;
-const char *LOG_ID = "ebur-out";
+const char *LOG_ID = "ebur128-out";
 
 static LADSPA_Descriptor c_ladspa_descriptor = { .UniqueID = 0x22b306,
     .Label = "ebur128_monitor_out_6s", .Name = "EBU R128 monitor out, 6 seconds window",
