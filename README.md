@@ -158,8 +158,9 @@ nc -luk 65432 | grep "\-out"
 
 **Levelers**:
 - Target: -20dB RMS / -20 LUFS
-- Boost signals below -40dB to target
-- Reduce signals above target
+- Pass signals below -40dB unchanged (noise floor)
+- Boost signals between -40dB and -20dB toward target
+- Reduce signals above -20dB to target
 - Smooth transitions via look-ahead window
 
 **Limiters**:
