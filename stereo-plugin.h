@@ -12,7 +12,7 @@
 #include <pthread.h>
 
 #define ARRAY_LENGTH(arr) (sizeof(arr) / sizeof((arr)[0]))
-#define BROADCAST_ADDRESS "255.255.255.255"
+#define BROADCAST_ADDRESS "127.0.0.1"
 #define BROADCAST_PORT 65432
 
 static const char * c_port_names[5] = {
