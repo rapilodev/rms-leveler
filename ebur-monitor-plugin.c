@@ -65,10 +65,12 @@ static void connect_port(const LADSPA_Handle handle, unsigned long num,
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
     EburLeveler *h = (EburLeveler*) handle;
+    if (h == NULL || h->input_gain_port == NULL || samples == 0) return;
 
     struct EburChannel* channels[] = {&h->left, &h->right};
     for (int c = 0; c < ARRAY_LENGTH(channels); c++) {
         struct EburChannel *channel = channels[c];
+        if (channel->in == NULL || channel->out == NULL) continue;
         for (uint32_t s = 0; s < samples; s++) {
             LADSPA_Data input = (channel == NULL) ? 0 : channel->in[s];
             if (channel->out != NULL)

@@ -78,10 +78,12 @@ static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_D
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
     Leveler * h = (Leveler *) handle;
+    if (h == NULL || h->input_gain_port == NULL || samples == 0) return;
     struct Channel* channels[] = {&h->left, &h->right};
     h->input_gain = pow(10.0, *(h->input_gain_port) / 20.0);
     for (int c = 0; c < ARRAY_LENGTH(channels); c++) {
         struct Channel* channel = channels[c];
+        if (channel->in == NULL || channel->out == NULL) continue;
         struct Window* window1 = &channel->window1;
 
         for (unsigned long s = 0; s < samples; s++) {
