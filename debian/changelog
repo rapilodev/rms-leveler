@@ -1,3 +1,11 @@
+rms-leveler (0.20~noble) noble; urgency=low
+  * NULL checks like no input...
+ -- Milan Chrobok <mc@radiopiloten.de>  Wed, 20 Oct 2025 22:20:00 +0330
+
+rms-leveler (0.19~noble) noble; urgency=low
+  * limit broadcast to localhost
+ -- Milan Chrobok <mc@radiopiloten.de>  Wed, 19 Oct 2025 21:20:00 +0330
+
 rms-leveler (0.18~noble) noble; urgency=low
   * Readme: update
   * fix ebur128 monitor prefix
