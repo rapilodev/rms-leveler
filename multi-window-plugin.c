@@ -116,7 +116,7 @@ void getAvgAmp(struct Channel* channel, struct Window* window1, struct Window* w
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
     Leveler * h = (Leveler *) handle;
-    if (h == NULL || h->input_gain_port == NULL || samples == 0) return;
+    if (h == NULL || samples == 0) return;
 
     struct Channel* channels[] = {&h->left, &h->right};
     for (int c = 0; c < ARRAY_LENGTH(channels); c++) {
