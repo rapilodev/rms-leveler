@@ -80,26 +80,34 @@ inline double limit(double value) {
 void calcWindowAmplification(struct Window* window, double loudness, const int IS_LEVELER, const double input_gain) {
     window->oldLoudness = window->loudness;
     window->loudness = loudness;
-
     window->oldAmplification = window->amplification;
     const int IS_LIMITER = !IS_LEVELER;
-
-    if (window->loudness < MIN_LOUDNESS || (IS_LIMITER && window->loudness <= TARGET_LOUDNESS)) {
-        // Compensate 3dB if leveler is gated or limiter is idle
-        window->amplification = DB3 * 1.0 / input_gain;
-        return;
-    } else {
-        // Active Leveling/Limiting
-        window->amplification = getAmplification(window->loudness, window->oldLoudness, window->amplification);
+    if (IS_LIMITER) {
+        if(window->loudness <= TARGET_LOUDNESS - 3) {
+            // Compensate 3dB if limiter is idle
+            window->amplification = DB3 * 1.0 / input_gain;
+        } else {
+            // Active Leveling/Limiting
+            window->amplification = getAmplification(window->loudness, window->oldLoudness, window->amplification);
+            // Hard Ceiling for Limiter mode
+            if (IS_LIMITER && window->amplification > 1.0 ) {
+                window->amplification = 1.0;
+            }
+        }
     }
-    // Constraints (Slew Rate / Max Change)
-    double maxAllowed = window->oldAmplification + window->maxAmpChange;
-    if (window->amplification > maxAllowed) {
-        window->amplification = maxAllowed;
-    }
-    // Hard Ceiling for Limiter mode
-    if (IS_LIMITER && window->amplification > 1.0 ) {
-        window->amplification = 1.0;
+    if (IS_LEVELER) {
+        if (window->loudness < MIN_LOUDNESS) {
+            // Compensate 3dB if leveler is gated
+            window->amplification = DB3 * 1.0 / input_gain;
+        } else {
+            // Active Leveling/Limiting
+            window->amplification = getAmplification(window->loudness, window->oldLoudness, window->amplification);
+            // Constraints (Slew Rate / Max Change)
+            double maxAllowed = window->oldAmplification + window->maxAmpChange;
+            if (window->amplification > maxAllowed) {
+                window->amplification = maxAllowed;
+            }
+        }
     }
 }
 
