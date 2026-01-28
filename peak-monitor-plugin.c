@@ -10,6 +10,7 @@
 #include <math.h>
 #include "amplify.h"
 #include "stereo-plugin.h"
+#include "monitor-plugin.h"
 
 extern const double BUFFER_DURATION1;
 extern const char *LOG_ID;
@@ -27,29 +28,31 @@ typedef struct {
     double peak_right;
     unsigned long rate;
     double t;
-    char *log_dir;
-} Leveler;
+    FileLogger file_logger;
+} Monitor;
 
 
 static LADSPA_Handle instantiate(const LADSPA_Descriptor *d, unsigned long rate) {
-    Leveler *h = calloc(1, sizeof(Leveler));
+    Monitor *h = calloc(1, sizeof(Monitor));
     if (h == NULL) return NULL;
     h->rate = rate;
-    h->log_dir = getenv("MONITOR_LOG_DIR");
-    if (h->log_dir == NULL)
-        h->log_dir = "/var/log/monitor";
+    char *dir = getenv("MONITOR_LOG_DIR");
+    if (dir == NULL) dir = "/var/log/monitor";
+    file_logger_init(&h->file_logger, dir, LOG_ID);
     setup_socket();
     return (LADSPA_Handle) h;
 }
 
 static void cleanup(LADSPA_Handle handle) {
+    Monitor * h = (Monitor *) handle;
+    file_logger_cleanup(&h->file_logger);
     free(handle);
     close_socket();
 }
 
 static void connect_port(const LADSPA_Handle handle, unsigned long num,
         LADSPA_Data *port) {
-    Leveler *h = (Leveler*) handle;
+    Monitor *h = (Monitor*) handle;
     if (num == 0)
         h->left.in = port;
     if (num == 1)
@@ -61,7 +64,7 @@ static void connect_port(const LADSPA_Handle handle, unsigned long num,
 }
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
-    Leveler *h = (Leveler*) handle;
+    Monitor *h = (Monitor*) handle;
     if (h == NULL || samples == 0) return;
     double peaks[] = { h->peak_left, h->peak_right };
     struct Channel* channels[] = {&h->left, &h->right};
@@ -83,12 +86,12 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 
     h->t += samples;
     double limit = BUFFER_DURATION1 * h->rate;
-    if (h->t > limit) {
+    if (h->t >= limit) {
         h->t -= limit;
         double l = getDb(h->peak_left);
         double r = getDb(h->peak_right);
         print_log(LOG_ID, l, r);
-        file_log(h->log_dir, LOG_ID, l, r);
+        file_log(&h->file_logger, l, r);
         send_broadcast_message(LOG_ID, l, r);
         h->peak_left = 0.0;
         h->peak_right = 0.0;

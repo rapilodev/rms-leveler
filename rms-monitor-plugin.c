@@ -10,6 +10,7 @@
 #include <math.h>
 #include "amplify.h"
 #include "stereo-plugin.h"
+#include "monitor-plugin.h"
 
 extern const int LOOK_AHEAD;
 extern const double BUFFER_DURATION1;
@@ -27,10 +28,10 @@ typedef struct {
     struct Channel right;
     unsigned long rate;
     double t;
-    char *log_dir;
-} Leveler;
+    FileLogger file_logger;
+} Monitor;
 
-void destroyLeveler(Leveler *h) {
+void destroyMonitor(Monitor *h) {
     if (h == NULL) return;
     freeWindow(&h->left.window1);
     freeWindow(&h->right.window1);
@@ -38,20 +39,20 @@ void destroyLeveler(Leveler *h) {
 }
 
 static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate) {
-    Leveler * h = calloc(1, sizeof(Leveler));
+    Monitor * h = calloc(1, sizeof(Monitor));
     if (h == NULL) return NULL;
     h->rate = rate;
     h->t = 0.;
-    h->log_dir = getenv("MONITOR_LOG_DIR");
-    if (h->log_dir == NULL)
-        h->log_dir = "/var/log/monitor";
+    char *dir = getenv("MONITOR_LOG_DIR");
+    if (dir == NULL) dir = "/var/log/monitor";
+    file_logger_init(&h->file_logger, dir, LOG_ID);
 
     if (!initWindow(&h->left.window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE)) {
-        destroyLeveler(h);
+        destroyMonitor(h);
         return NULL;
     }
     if (!initWindow(&h->right.window1, LOOK_AHEAD, BUFFER_DURATION1, h->rate, MAX_CHANGE, ADJUST_RATE)) {
-        destroyLeveler(h);
+        destroyMonitor(h);
         return NULL;
     }
 
@@ -60,13 +61,14 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor * d, unsigned long rate
 }
 
 static void cleanup(LADSPA_Handle handle) {
-    Leveler * h = (Leveler *) handle;
-    destroyLeveler(h);
+    Monitor * h = (Monitor *) handle;
+    file_logger_cleanup(&h->file_logger);
+    destroyMonitor(h);
     close_socket();
 }
 
 static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_Data * port) {
-    Leveler * h = (Leveler *) handle;
+    Monitor * h = (Monitor *) handle;
     if (num == 0)   h->left.in = port;
     if (num == 1)  h->right.in = port;
     if (num == 2)  h->left.out = port;
@@ -74,7 +76,7 @@ static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_D
 }
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
-    Leveler * h = (Leveler *) handle;
+    Monitor * h = (Monitor *) handle;
     if (h == NULL || samples == 0) return;
 
     struct Channel* channels[] = {&h->left, &h->right};
@@ -95,12 +97,12 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 
     h->t += samples;
     double limit = BUFFER_DURATION1 * h->rate;
-    if (h->t > limit) {
+    if (h->t >= limit) {
         h->t -= limit;
         double rms_left  = getRmsValue(h->left.window1.sumSquare,  h->left.window1.size);
         double rms_right = getRmsValue(h->right.window1.sumSquare, h->right.window1.size);
         print_log(LOG_ID, rms_left, rms_right);
-        file_log(h->log_dir, LOG_ID, rms_left, rms_right);
+        file_log(&h->file_logger, rms_left, rms_right);
         send_broadcast_message(LOG_ID, rms_left, rms_right);
     }
 }

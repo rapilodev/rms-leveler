@@ -24,13 +24,13 @@ struct Window {
     unsigned long index;
     unsigned long adjustPosition;
     unsigned long playPosition;
-    double adjustRate;
+    unsigned long adjustRate;
     double maxAmpChange;
     double amplification;
     double oldAmplification;
 };
 
-void freeWindow(struct Window* window) {
+static inline void freeWindow(struct Window* window) {
     if (window == NULL) return;
     if (window->data != NULL) {
         free(window->data);
@@ -42,7 +42,7 @@ void freeWindow(struct Window* window) {
     }
 }
 
-int initWindow(struct Window* window, int look_ahead, double duration, double rate, double max_change, double adjust_rate) {
+static int inline initWindow(struct Window* window, int look_ahead, double duration, double rate, double max_change, double adjust_rate) {
     if (window == NULL) return 0;
     freeWindow(window);
     window->look_ahead = look_ahead;
@@ -53,12 +53,8 @@ int initWindow(struct Window* window, int look_ahead, double duration, double ra
         window->duration = duration;
         window->dataSize = (unsigned long) (duration * rate);
         window->data = (LADSPA_Data*) calloc(window->dataSize, sizeof(LADSPA_Data));
-        if (window->data == NULL) {
-            freeWindow(window);
-            return 0;
-        }
         window->square = (double*) calloc(window->dataSize, sizeof(double));
-        if (window->square == NULL) {
+        if (!window->data || !window->square) {
             freeWindow(window);
             return 0;
         }
@@ -123,11 +119,13 @@ inline void moveWindow(struct Window* window) {
     window->adjustPosition += 1;
     if (window->adjustPosition >= window->adjustRate)
         window->adjustPosition -= window->adjustRate;
-
+#ifdef DEBUG
     window->position += window->deltaPosition;
+#endif
 }
 
 inline double getWindowDcOffset(struct Window* window) {
+    if (window->size == 0) return 0.0;
     double dcOffset = window->sum / window->size;
     if ((dcOffset > -dcOffsetLimit) && (dcOffset < dcOffsetLimit))
         return 0.0;
