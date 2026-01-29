@@ -4,13 +4,13 @@
 //  SPDX-FileCopyrightText: 2016 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <stdlib.h>
 #include <ladspa.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "ebur128.h"
-#include "amplify.h"
-#include "stereo-plugin.h"
+#include "window.h"
+#include "amp-plugin.h"
 
 extern const int IS_LEVELER;
 extern const int LOOK_AHEAD;

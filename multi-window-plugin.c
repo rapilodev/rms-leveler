@@ -4,12 +4,12 @@
 #ifndef multi_window_plugin
 #define multi_window_plugin
 
-#include <stdlib.h>
 #include <ladspa.h>
-#include <stdio.h>
 #include <math.h>
-#include "amplify.h"
-#include "stereo-plugin.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "window.h"
+#include "amp-plugin.h"
 
 extern const int IS_LEVELER;
 extern const int LOOK_AHEAD;
@@ -36,6 +36,7 @@ typedef struct {
     struct Channel right;
     unsigned long rate;
     double input_gain;
+    LADSPA_Data* input_gain_port;
 } Leveler;
 
 void destroyLeveler(Leveler *h) {
@@ -82,12 +83,13 @@ static void cleanup(LADSPA_Handle handle) {
     destroyLeveler(h);
 }
 
-static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_Data * port) {
+static void connect_port(const LADSPA_Handle handle, unsigned long num, LADSPA_Data* port) {
     Leveler * h = (Leveler *) handle;
     if (num == 0) h->left.in = port;
     if (num == 1) h->right.in = port;
     if (num == 2) h->left.out = port;
     if (num == 3) h->right.out = port;
+    if (num == 4) h->input_gain_port = port;
 }
 
 void getAvgAmp(struct Channel* channel, struct Window* window1, struct Window* window2, struct Window* window3) {
@@ -116,9 +118,10 @@ void getAvgAmp(struct Channel* channel, struct Window* window1, struct Window* w
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
     Leveler * h = (Leveler *) handle;
-    if (h == NULL || samples == 0) return;
+    if (h == NULL || h->input_gain_port == NULL || samples == 0) return;
 
     struct Channel* channels[] = {&h->left, &h->right};
+    h->input_gain = pow(10.0, *(h->input_gain_port) / 20.0);
     for (int c = 0; c < ARRAY_LENGTH(channels); c++) {
         struct Channel* channel = channels[c];
         if (channel->in == NULL || channel->out == NULL) continue;

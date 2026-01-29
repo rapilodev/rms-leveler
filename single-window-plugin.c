@@ -4,12 +4,12 @@
 #ifndef single_window_plugin
 #define single_window_plugin
 
-#include <stdlib.h>
 #include <ladspa.h>
-#include <stdio.h>
 #include <math.h>
-#include "amplify.h"
-#include "stereo-plugin.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "window.h"
+#include "amp-plugin.h"
 
 extern const int IS_LEVELER;
 extern const int LOOK_AHEAD;

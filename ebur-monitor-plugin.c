@@ -4,17 +4,16 @@
 //  SPDX-FileCopyrightText: 2024 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <stdint.h>
-#include <stdlib.h>
 #include <ladspa.h>
 #include <math.h>
-#include "ebur128.h"
-#include "amplify.h"
-#include "stereo-plugin.h"
+#include <stdint.h>
+#include <stdlib.h>
 #include "monitor-plugin.h"
+#include "ebur128.h"
+#include "file-log.h"
+#include "socket.h"
 
-const double SECONDS = 1000.0;
-extern const double BUFFER_DURATION1;
+#define SECONDS 1000.0;
 extern const char *LOG_ID;
 
 struct EburChannel {
@@ -29,12 +28,14 @@ typedef struct {
     unsigned long rate;
     double t;
     FileLogger file_logger;
-} EburLeveler;
+    double buffer_duration;
+} EburMonitor;
 
 static LADSPA_Handle instantiate(const LADSPA_Descriptor *d, unsigned long rate) {
-    EburLeveler *h = calloc(1, sizeof(EburLeveler));
+    EburMonitor *h = calloc(1, sizeof(EburMonitor));
     if (h == NULL) return NULL;
     h->rate = rate;
+    h->buffer_duration = WINDOW_INIT;
 
     char *dir = getenv("MONITOR_LOG_DIR");
     if (dir == NULL) dir = "/var/log/monitor";
@@ -42,29 +43,34 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor *d, unsigned long rate)
 
     h->left.ebur128 = ebur128_init(1, h->rate, EBUR128_MODE_I);
     h->right.ebur128 = ebur128_init(1, h->rate, EBUR128_MODE_I);
+    setup_socket();
     return (LADSPA_Handle) h;
 }
 
 static void cleanup(LADSPA_Handle handle) {
-    EburLeveler *h = (EburLeveler*) handle;
+    EburMonitor *h = (EburMonitor*) handle;
     if (h == NULL) return;
     ebur128_destroy(&h->left.ebur128);
     ebur128_destroy(&h->right.ebur128);
     file_logger_cleanup(&h->file_logger);
     free(handle);
+    close_socket();
 }
 
 static void connect_port(const LADSPA_Handle handle, unsigned long num,
         LADSPA_Data *port) {
-    EburLeveler *h = (EburLeveler*) handle;
+    EburMonitor *h = (EburMonitor*) handle;
     if (num == 0) h->left.in = port;
     if (num == 1) h->right.in = port;
     if (num == 2) h->left.out = port;
     if (num == 3) h->right.out = port;
+    if (num == 4) h->buffer_duration = *port;
+    if (h->buffer_duration < WINDOW_MIN) h->buffer_duration = WINDOW_MIN;
+    if (h->buffer_duration > WINDOW_MAX) h->buffer_duration = WINDOW_MAX;
 }
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
-    EburLeveler *h = (EburLeveler*) handle;
+    EburMonitor *h = (EburMonitor*) handle;
     if (h == NULL || samples == 0) return;
 
     struct EburChannel* channels[] = {&h->left, &h->right};
@@ -80,10 +86,9 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
     }
 
     h->t += samples;
-    double limit = BUFFER_DURATION1 * h->rate;
-
+    double limit = h->rate * MIN(h->buffer_duration, LOG_INTERVAL);
     if (h->t >= limit) {
-        h->t -= limit;
+        while(h->t >= limit) h->t -= limit;
         double loudness_l = 0.;
         double loudness_r = 0.;
 

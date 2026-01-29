@@ -3,7 +3,13 @@
 
 #ifndef window_h
 #define window_h
+#include <ladspa.h>
+#include "amplify.h"
 
+static inline unsigned long wrap_at(unsigned long val, unsigned long limit) {
+    while (val >= limit) val -= limit;
+    return val;
+}
 // amplitude limit to what DC offset is not removed
 const double dcOffsetLimit = 0.005;
 
@@ -90,35 +96,22 @@ inline void sumWindowData(struct Window* window) {
     window->sumSquare += window->square[window->index];
 }
 
-inline void prepareWindow(struct Window* window) {
+inline static void prepareWindow(struct Window* window) {
     if (!window->active) return;
     //increase buffer size on start
     if (window->size < window->dataSize)
         window->size++;
 
-    window->playPosition = window->index + window->dataSize / 2;
-    if (window->playPosition >= window->dataSize)
-        window->playPosition -= window->dataSize;
-
-    while (window->index >= window->dataSize) {
-        window->index -= window->dataSize;
-    }
+    window->playPosition = wrap_at(window->index + window->dataSize / 2, window->dataSize);
+    window->index = wrap_at(window->index, window->dataSize);
 }
 
-inline void moveWindow(struct Window* window) {
+inline static void moveWindow(struct Window* window) {
     if (!window->active) return;
 
-    window->index += 1;
-    if (window->index >= window->dataSize)
-        window->index -= window->dataSize;
-
-    window->playPosition += 1;
-    if (window->playPosition >= window->dataSize)
-        window->playPosition -= window->dataSize;
-
-    window->adjustPosition += 1;
-    if (window->adjustPosition >= window->adjustRate)
-        window->adjustPosition -= window->adjustRate;
+    window->index          = wrap_at(++window->index, window->dataSize);
+    window->playPosition   = wrap_at(++window->playPosition, window->dataSize);
+    window->adjustPosition = wrap_at(++window->adjustPosition, window->adjustRate);
 #ifdef DEBUG
     window->position += window->deltaPosition;
 #endif
@@ -131,5 +124,49 @@ inline double getWindowDcOffset(struct Window* window) {
         return 0.0;
     return dcOffset;
 }
+
+void calcWindowAmplification(struct Window* window, double loudness, const int IS_LEVELER, const double input_gain) {
+    window->oldLoudness = window->loudness;
+    window->loudness = loudness;
+    window->oldAmplification = window->amplification;
+    const int IS_LIMITER = !IS_LEVELER;
+    if (IS_LIMITER) {
+        if(window->loudness <= TARGET_LOUDNESS - 3) {
+            // Compensate 3dB if limiter is idle
+            window->amplification = DB3 * 1.0 / input_gain;
+        } else {
+            // Active Leveling/Limiting
+            window->amplification = getAmplification(window->loudness, window->oldLoudness, window->amplification);
+            // Hard Ceiling for Limiter mode
+            if (IS_LIMITER && window->amplification > 1.0 ) {
+                window->amplification = 1.0;
+            }
+        }
+    }
+    if (IS_LEVELER) {
+        if (window->loudness < MIN_LOUDNESS) {
+            // Compensate 3dB if leveler is gated
+            window->amplification = DB3 * 1.0 / input_gain;
+        } else {
+            // Active Leveling/Limiting
+            window->amplification = getAmplification(window->loudness, window->oldLoudness, window->amplification);
+            // Constraints (Slew Rate / Max Change)
+            double maxAllowed = window->oldAmplification + window->maxAmpChange;
+            if (window->amplification > maxAllowed) {
+                window->amplification = maxAllowed;
+            }
+        }
+    }
+}
+
+void printWindow(struct Window* window, int isLast) {
+    fprintf(stderr, "%.1f\t%2.3f\t%2.3f\t%2.3f", window->position, window->loudness, (TARGET_LOUDNESS - window->loudness), window->amplification);
+    if (isLast) {
+        fprintf(stderr, "\n");
+    } else {
+        fprintf(stderr, "  ");
+    }
+}
+
 
 #endif

@@ -5,10 +5,8 @@
 #define amplify_h
 
 #include <stdlib.h>
-#include <ladspa.h>
 #include <stdio.h>
 #include <math.h>
-#include "window.h"
 
 // target loudness, should be -20 DB
 const double TARGET_LOUDNESS = -20.0;
@@ -75,49 +73,6 @@ inline double limit(double value) {
     if (amplitude > MAX_LEVEL)  amplitude = MAX_LEVEL;
     if (amplitude < -MAX_LEVEL) amplitude = -MAX_LEVEL;
     return amplitude;
-}
-
-void calcWindowAmplification(struct Window* window, double loudness, const int IS_LEVELER, const double input_gain) {
-    window->oldLoudness = window->loudness;
-    window->loudness = loudness;
-    window->oldAmplification = window->amplification;
-    const int IS_LIMITER = !IS_LEVELER;
-    if (IS_LIMITER) {
-        if(window->loudness <= TARGET_LOUDNESS - 3) {
-            // Compensate 3dB if limiter is idle
-            window->amplification = DB3 * 1.0 / input_gain;
-        } else {
-            // Active Leveling/Limiting
-            window->amplification = getAmplification(window->loudness, window->oldLoudness, window->amplification);
-            // Hard Ceiling for Limiter mode
-            if (IS_LIMITER && window->amplification > 1.0 ) {
-                window->amplification = 1.0;
-            }
-        }
-    }
-    if (IS_LEVELER) {
-        if (window->loudness < MIN_LOUDNESS) {
-            // Compensate 3dB if leveler is gated
-            window->amplification = DB3 * 1.0 / input_gain;
-        } else {
-            // Active Leveling/Limiting
-            window->amplification = getAmplification(window->loudness, window->oldLoudness, window->amplification);
-            // Constraints (Slew Rate / Max Change)
-            double maxAllowed = window->oldAmplification + window->maxAmpChange;
-            if (window->amplification > maxAllowed) {
-                window->amplification = maxAllowed;
-            }
-        }
-    }
-}
-
-void printWindow(struct Window* window, int isLast) {
-    fprintf(stderr, "%.1f\t%2.3f\t%2.3f\t%2.3f", window->position, window->loudness, (TARGET_LOUDNESS - window->loudness), window->amplification);
-    if (isLast) {
-        fprintf(stderr, "\n");
-    } else {
-        fprintf(stderr, "  ");
-    }
 }
 
 #endif

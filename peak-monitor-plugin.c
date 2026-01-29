@@ -9,10 +9,11 @@
 #include <stdio.h>
 #include <math.h>
 #include "amplify.h"
-#include "stereo-plugin.h"
+#include "file-log.h"
+#include "socket.h"
 #include "monitor-plugin.h"
 
-extern const double BUFFER_DURATION1;
+double BUFFER_DURATION1;
 extern const char *LOG_ID;
 
 struct Channel {
@@ -29,6 +30,7 @@ typedef struct {
     unsigned long rate;
     double t;
     FileLogger file_logger;
+    double buffer_duration;
 } Monitor;
 
 
@@ -36,6 +38,7 @@ static LADSPA_Handle instantiate(const LADSPA_Descriptor *d, unsigned long rate)
     Monitor *h = calloc(1, sizeof(Monitor));
     if (h == NULL) return NULL;
     h->rate = rate;
+
     char *dir = getenv("MONITOR_LOG_DIR");
     if (dir == NULL) dir = "/var/log/monitor";
     file_logger_init(&h->file_logger, dir, LOG_ID);
@@ -61,6 +64,9 @@ static void connect_port(const LADSPA_Handle handle, unsigned long num,
         h->left.out = port;
     if (num == 3)
         h->right.out = port;
+    if (num == 4) h->buffer_duration = *port;
+    if (h->buffer_duration < WINDOW_MIN) h->buffer_duration = WINDOW_MIN;
+    if (h->buffer_duration > WINDOW_MAX) h->buffer_duration = WINDOW_MAX;
 }
 
 static void run(LADSPA_Handle handle, unsigned long samples) {
@@ -85,9 +91,9 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
     h->peak_right = peaks[1];
 
     h->t += samples;
-    double limit = BUFFER_DURATION1 * h->rate;
+    double limit = h->rate * MIN(h->buffer_duration, LOG_INTERVAL);
     if (h->t >= limit) {
-        h->t -= limit;
+        while(h->t >= limit) h->t -= limit;
         double l = getDb(h->peak_left);
         double r = getDb(h->peak_right);
         print_log(LOG_ID, l, r);

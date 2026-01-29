@@ -1,17 +1,17 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
-#include <time.h>
-#include <stdio.h>
+#include <arpa/inet.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <pthread.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <fcntl.h>
 #include <sys/stat.h>
+#include <time.h>
+#include <unistd.h>
 
 #define BROADCAST_ADDRESS "127.0.0.1"
 #define BROADCAST_PORT 65432
