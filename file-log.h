@@ -24,48 +24,55 @@ typedef struct {
     char log_id[64];
 } FileLogger;
 
-// Worker must be static to avoid linker conflicts
+// Helper to write data from ring buffer to file
+static inline void _file_logger_flush(FileLogger* l) {
+    size_t h = atomic_load_explicit(&l->head, memory_order_acquire);
+    size_t t = atomic_load_explicit(&l->tail, memory_order_relaxed);
+
+    if (h != t) {
+        time_t now = time(NULL);
+        struct tm lt;
+        localtime_r(&now, &lt);
+
+        char date_str[11];
+        char time_str[20];
+        strftime(date_str, sizeof(date_str), "%Y-%m-%d", &lt);
+        strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &lt);
+
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "%s/%s-monitor-%s.log",
+                 l->log_dir, date_str, l->log_id);
+
+        FILE* f = fopen(full_path, "a");
+        if (f) {
+            fprintf(f, "%s\t", time_str);
+            while (t != h) {
+                char c = l->buffer[t];
+                fputc(c, f);
+                t = (t + 1) % LOG_BUF_SIZE;
+                // If we reach a newline, we stop this write block to keep timestamps accurate per line
+                if (c == '\n' && t != h) {
+                    fprintf(f, "%s\t", time_str);
+                }
+            }
+            atomic_store_explicit(&l->tail, t, memory_order_release);
+            fclose(f);
+        } else {
+            // If file can't open, skip data to prevent buffer bloat
+            atomic_store_explicit(&l->tail, h, memory_order_release);
+        }
+    }
+}
+
 static void* logger_background_worker(void* arg) {
     FileLogger* l = (FileLogger*)arg;
     while (atomic_load(&l->run_thread)) {
-        size_t h = atomic_load(&l->head);
-        size_t t = atomic_load(&l->tail);
-
-        if (h != t) {
-            time_t now = time(NULL);
-            struct tm lt;
-            localtime_r(&now, &lt);
-
-            char date_str[11];
-            char time_str[20];
-            strftime(date_str, sizeof(date_str), "%Y-%m-%d", &lt);
-            strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &lt);
-
-            char full_path[1024];
-            snprintf(full_path, sizeof(full_path), "%s/%s-monitor-%s.log",
-                     l->log_dir, date_str, l->log_id);
-
-            FILE* f = fopen(full_path, "a");
-            if (f) {
-                fprintf(f, "%s\t", time_str);
-                while (t != h) {
-                    char c = l->buffer[t];
-                    fputc(c, f);
-                    t = (t + 1) % LOG_BUF_SIZE;
-                    if (c == '\n') break;
-                }
-                atomic_store(&l->tail, t);
-                fclose(f);
-            } else {
-                atomic_store(&l->tail, h);
-            }
-        }
+        _file_logger_flush(l);
         usleep(200000);
     }
     return NULL;
 }
 
-// Added static inline to prevent "implicit declaration" and "multiple definition"
 static inline void file_log(FileLogger* l, double left, double right) {
     if (!l || !l->can_log) return;
 
@@ -87,7 +94,6 @@ static inline void file_logger_init(FileLogger* l, const char* dir, const char* 
     if (!l) return;
     struct stat info;
 
-    // Fixed strncpy warnings by ensuring buffer-1 length and manual null termination
     l->log_dir[sizeof(l->log_dir) - 1] = '\0';
     strncpy(l->log_dir, dir, sizeof(l->log_dir) - 1);
 
@@ -96,8 +102,8 @@ static inline void file_logger_init(FileLogger* l, const char* dir, const char* 
 
     if (stat(dir, &info) == 0 && S_ISDIR(info.st_mode) && access(dir, W_OK) == 0) {
         l->can_log = true;
-        l->head = 0;
-        l->tail = 0;
+        atomic_init(&l->head, 0);
+        atomic_init(&l->tail, 0);
         atomic_store(&l->run_thread, true);
         pthread_create(&l->thread, NULL, logger_background_worker, l);
     } else {
@@ -108,19 +114,23 @@ static inline void file_logger_init(FileLogger* l, const char* dir, const char* 
 
 static inline void file_logger_cleanup(FileLogger* l) {
     if (l && l->can_log) {
+        // 1. Signal thread to stop
         atomic_store(&l->run_thread, false);
+        // 2. Wait for thread to finish its last usleep cycle
         pthread_join(l->thread, NULL);
+        // 3. FINAL DRAIN: Write anything left in the buffer after thread is dead
+        _file_logger_flush(l);
         l->can_log = false;
     }
 }
 
-void print_log(const char* LOG_ID, double l, double r) {
+static inline void print_log(const char* LOG_ID, double l, double r) {
     time_t now;
     time(&now);
-    struct tm *localTime = localtime(&now);
+    struct tm lt;
+    localtime_r(&now, &lt);
     char formattedTime[20];
-    strftime(formattedTime, sizeof(formattedTime), "%Y-%m-%d %H:%M:%S",
-            localTime);
+    strftime(formattedTime, sizeof(formattedTime), "%Y-%m-%d %H:%M:%S", &lt);
     fprintf(stderr, "%s %s\t%2.3f\t%2.3f\n", formattedTime, LOG_ID, l, r);
 }
 
