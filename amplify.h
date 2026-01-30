@@ -23,14 +23,17 @@ const double MAX_CHANGE = 0.7;
 
 const double DB3 = sqrt(2);
 
+// For Peak: Use raw amplitude
 inline double getDb(double a) {
-    if (a == 0.0) a = 0.0000000000001;
-    return 20.0 * log10(sqrt(a));
+    if (a <= 0.0000000000001) return -120.0;
+    return 20.0 * log10(a);
 }
-
-inline double getRmsValue(const double rmsSum, const double size) {
-    double sum = rmsSum / size;
-    return getDb(sum);
+// For RMS: Use the sum of squares (Power)
+inline double getRmsDb(const double rmsSum, const double size) {
+    double mean_square = rmsSum / size;
+    if (mean_square <= 0.0) return -120.0;
+    // 10 * log10 of power is equivalent to 20 * log10 of RMS amplitude
+    return 10.0 * log10(mean_square);
 }
 
 inline double getAmplification(const double loudness, const double oldLoudness, const double oldAmp) {
