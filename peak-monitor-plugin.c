@@ -1,8 +1,8 @@
 //  SPDX-FileCopyrightText: 2016 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef single_window_plugin
-#define single_window_plugin
+#ifndef peak_monitor_plugin
+#define peak_monitor_plugin
 
 #include <stdlib.h>
 #include <ladspa.h>

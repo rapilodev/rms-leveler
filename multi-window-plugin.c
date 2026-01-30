@@ -41,6 +41,8 @@ typedef struct {
 
 void destroyLeveler(Leveler *h) {
     if (h == NULL) return;
+
+
     freeWindow(&h->left.window1);
     freeWindow(&h->left.window2);
     freeWindow(&h->left.window3);
@@ -164,13 +166,13 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 #endif
 
             if (window1->active && window1->adjustPosition == 0){
-                calcWindowAmplification(window1, getRmsValue(window1->sumSquare, window1->size), IS_LEVELER, h->input_gain);
+                calcWindowAmplification(window1, getRmsDb(window1->sumSquare, window1->size), IS_LEVELER, h->input_gain);
             }
             if (window2->active && window2->adjustPosition == 0){
-                calcWindowAmplification(window2, getRmsValue(window2->sumSquare, window2->size), IS_LEVELER, h->input_gain);
+                calcWindowAmplification(window2, getRmsDb(window2->sumSquare, window2->size), IS_LEVELER, h->input_gain);
             }
             if (window3->active && window3->adjustPosition == 0){
-                calcWindowAmplification(window3, getRmsValue(window3->sumSquare, window3->size), IS_LEVELER, h->input_gain);
+                calcWindowAmplification(window3, getRmsDb(window3->sumSquare, window3->size), IS_LEVELER, h->input_gain);
             }
 
             if ( (window1->active && window1->adjustPosition == 0)

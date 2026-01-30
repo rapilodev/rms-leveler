@@ -1,5 +1,5 @@
-#ifndef ebur_plugin
-#define ebur_plugin
+#ifndef ebur_monitor_plugin
+#define ebur_monitor_plugin
 
 //  SPDX-FileCopyrightText: 2024 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later

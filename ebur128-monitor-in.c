@@ -1,6 +1,9 @@
 //  SPDX-FileCopyrightText: 2016 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
+#ifndef ebur128_monitor_in
+#define ebur128_monitor_in
+
 #include <ladspa.h>
 #include "ebur-monitor-plugin.c"
 
@@ -25,3 +28,5 @@ const LADSPA_Descriptor * ladspa_descriptor(unsigned long i) {
     if (i == 0) return &mon_ladspa_descriptor;
     return 0;
 }
+
+#endif

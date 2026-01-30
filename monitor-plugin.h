@@ -1,8 +1,9 @@
 //  SPDX-FileCopyrightText: 2016 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef monitor_plugin
-#define monitor_plugin
+#ifndef monitor_plugin_h
+#define monitor_plugin_h
+
 #include <ladspa.h>
 
 #define ARRAY_LENGTH(arr) (sizeof(arr) / sizeof((arr)[0]))

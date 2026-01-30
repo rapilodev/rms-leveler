@@ -1,5 +1,9 @@
 //  SPDX-FileCopyrightText: 2016 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
+
+#ifndef rms_leveler_6s_multi
+#define rms_leveler_6s_multi
+
 #include <ladspa.h>
 #include "multi-window-plugin.c"
 
@@ -29,3 +33,5 @@ const LADSPA_Descriptor * ladspa_descriptor(unsigned long i) {
     if (i == 0) return &c_ladspa_descriptor;
     return 0;
 }
+
+#endif

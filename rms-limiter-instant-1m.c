@@ -1,5 +1,9 @@
 //  SPDX-FileCopyrightText: 2016 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
+
+#ifndef rms_limiter_instant_1m
+#define rms_limiter_instant_1m
+
 #include <ladspa.h>
 #include "single-window-plugin.c"
 
@@ -28,3 +32,4 @@ const LADSPA_Descriptor * ladspa_descriptor(unsigned long i) {
     return 0;
 }
 
+#endif

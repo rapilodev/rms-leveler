@@ -1,3 +1,6 @@
+//  SPDX-FileCopyrightText: 2016 Milan Chrobok
+//  SPDX-License-Identifier: GPL-3.0-or-later
+
 #ifndef SOCKET_H
 #define SOCKET_H
 

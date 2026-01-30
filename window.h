@@ -3,6 +3,7 @@
 
 #ifndef window_h
 #define window_h
+
 #include <ladspa.h>
 #include "amplify.h"
 

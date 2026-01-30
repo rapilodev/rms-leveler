@@ -1,5 +1,9 @@
 //  SPDX-FileCopyrightText: 2024 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
+
+#ifndef rms_monitor_out
+#define rms_monitor_out
+
 #include <ladspa.h>
 #include "rms-monitor-plugin.c"
 
@@ -25,3 +29,4 @@ const LADSPA_Descriptor * ladspa_descriptor(unsigned long i) {
     return 0;
 }
 
+#endif

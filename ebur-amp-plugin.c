@@ -1,8 +1,8 @@
-#ifndef ebur_plugin
-#define ebur_plugin
-
 //  SPDX-FileCopyrightText: 2016 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
+
+#ifndef ebur_amp_plugin
+#define ebur_amp_plugin
 
 #include <ladspa.h>
 #include <math.h>

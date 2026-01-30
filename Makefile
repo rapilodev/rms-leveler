@@ -17,8 +17,8 @@ all:
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC -o rms-limiter-instant-1m.so rms-limiter-instant-1m.c
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC -o rms-monitor-in.so rms-monitor-in.c
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC -o rms-monitor-out.so rms-monitor-out.c
-	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC rms-leveler-6s-multi.c /usr/lib/*/libebur128.so -o rms-leveler-6s-multi.so
-	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC rms-limiter-6s-multi.c /usr/lib/*/libebur128.so -o rms-limiter-6s-multi.so
+	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC rms-leveler-6s-multi.c -o rms-leveler-6s-multi.so
+	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC rms-limiter-6s-multi.c -o rms-limiter-6s-multi.so
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC ebur128-leveler-6s.c /usr/lib/*/libebur128.so -o ebur128-leveler-6s.so
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC ebur128-limiter-6s.c /usr/lib/*/libebur128.so -o ebur128-limiter-6s.so
 	gcc -O2 $(CFLAGS) $(LDFLAGS) -Wall -shared -fPIC ebur128-leveler-3s.c /usr/lib/*/libebur128.so -o ebur128-leveler-3s.so

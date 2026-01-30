@@ -108,7 +108,7 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
 #endif
 
             if (window1->adjustPosition == 0)
-                calcWindowAmplification(window1, getRmsValue(window1->sumSquare, window1->size), IS_LEVELER, h->input_gain);
+                calcWindowAmplification(window1, getRmsDb(window1->sumSquare, window1->size), IS_LEVELER, h->input_gain);
             channel->amplification    = window1->amplification;
             channel->oldAmplification = window1->oldAmplification;
             moveWindow(window1);

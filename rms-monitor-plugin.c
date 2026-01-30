@@ -1,8 +1,8 @@
 //  SPDX-FileCopyrightText: 2016 Milan Chrobok
 //  SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef single_window_plugin
-#define single_window_plugin
+#ifndef rms_monitor_plugin
+#define rms_monitor_plugin
 
 #include <ladspa.h>
 #include <math.h>
@@ -110,8 +110,8 @@ static void run(LADSPA_Handle handle, unsigned long samples) {
     double limit = h->rate * MIN(h->buffer_duration, LOG_INTERVAL);
     if (h->t >= limit) {
         while(h->t >= limit) h->t -= limit;
-        double rms_left  = getRmsValue(h->left.window1.sumSquare,  h->left.window1.size);
-        double rms_right = getRmsValue(h->right.window1.sumSquare, h->right.window1.size);
+        double rms_left  = getRmsDb(h->left.window1.sumSquare,  h->left.window1.size);
+        double rms_right = getRmsDb(h->right.window1.sumSquare, h->right.window1.size);
         print_log(LOG_ID, rms_left, rms_right);
         file_log(&h->file_logger, rms_left, rms_right);
         send_broadcast_message(LOG_ID, rms_left, rms_right);
