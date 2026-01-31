@@ -1,3 +1,13 @@
+rms-leveler (0.21~noble) noble; urgency=low
+* Fix header file inclusions
+  * Flush file logs after writing to ensure data integrity
+  * Optimize gain processing in amplify.h
+  * Separate limiter from leveler logic
+  * Support configurable windows with 6s default
+  * Enhance measurement logging detail
+  * Add automated monitor test suite (t/monitors.pl)
+ -- Milan Chrobok <mc@radiopiloten.de>  Sat, 31 Jan 2026 00:20:00 +0330
+
 rms-leveler (0.20.1~noble) noble; urgency=low
   * NULL checks like no input...
  -- Milan Chrobok <mc@radiopiloten.de>  Wed, 20 Oct 2025 22:20:00 +0330
